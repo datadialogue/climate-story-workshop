@@ -1,0 +1,895 @@
+---
+pagetitle: "Seeing Climate Data"
+format:
+  revealjs:
+    theme: [default, theme/climate.scss]
+    width: 1280
+    height: 720
+    margin: 0.05
+    center: false
+    hash: true
+    slide-number: c/t
+    transition: fade
+    transition-speed: fast
+    background-transition: fade
+    controls: false
+    progress: true
+    preview-links: false
+    include-in-header:
+      - text: |
+          <script src="js/vendor/vega.min.js"></script>
+          <script src="js/vendor/vega-lite.min.js"></script>
+          <script src="js/vendor/vega-embed.min.js"></script>
+          <script src="data/data.js"></script>
+          <script src="js/theme.js"></script>
+          <script src="js/helpers.js"></script>
+          <script src="js/charts-runtime.js"></script>
+          <script src="charts/intro.js"></script>
+          <script src="charts/principles.js"></script>
+          <script src="charts/examples.js"></script>
+          <script src="charts/stories.js"></script>
+resources:
+  - js/
+  - data/data.js
+  - charts/
+  - images/
+  - story/
+---
+
+## {.title-me}
+
+::: {.me}
+::: {.step}
+[Hi, I'm<br>Alireza Karduni]{.bigname}
+
+[I teach and research data visualization,<br>among other things]{.subname}
+:::
+
+![](images/alireza.png)
+:::
+
+# [01]{.num}Storytelling with <br>[visualization??]{.accent} {.section-slide background-color="#1C2430"}
+
+## Berries {.notitle}
+
+::: {.r-stack}
+![](images/berries.png){.frame height="560"}
+
+<div class="vl fragment" data-chart="berries"></div>
+:::
+
+## 64 numbers {.notitle}
+
+::: {.r-stack}
+<div class="vl" data-chart="temp-table" data-step="1"></div>
+
+<div class="vl fragment" data-chart="temp-table" data-step="2"></div>
+:::
+
+[Global temperature, 1962–2025, °C above the 1951–1980 average. Data: [NASA GISTEMP v4](https://data.giss.nasa.gov/gistemp/)]{.source}
+
+## Map {.notitle}
+
+::: {.r-stack}
+<div class="vl" data-chart="world-map" data-step="1"></div>
+
+<div class="vl fragment" data-chart="world-map" data-step="2"></div>
+
+<div class="vl fragment" data-chart="world-map" data-step="3"></div>
+
+<div class="vl fragment" data-chart="world-map" data-step="4"></div>
+:::
+
+[Data: [Our World in Data, CO₂ emissions per person (2024)](https://github.com/owid/co2-data)]{.source}
+
+## Bars {.notitle}
+
+<div class="vl" data-chart="canada-india-bars" style="padding-top:2em"></div>
+
+[Data: [Our World in Data, CO₂ emissions per person (2024)](https://github.com/owid/co2-data)]{.source}
+
+## Squares {.notitle}
+
+<div class="vl" data-chart="gray-squares" style="padding-top:5em"></div>
+
+[Data: [Our World in Data, CO₂ emissions per person (2024)](https://github.com/owid/co2-data)]{.source}
+
+## Snake bars {.notitle}
+
+<div class="vl" data-chart="snake" style="padding-top:1.5em"></div>
+
+<span class="fragment" data-chart-event="wrap"></span>
+
+[Data: [Our World in Data, cumulative CO₂ emissions](https://github.com/owid/co2-data)]{.source}
+
+## Du Bois {.notitle}
+
+::: {.center}
+![](images/dubois.png){.frame height="600"}
+:::
+
+## Visualization {.statement-list}
+
+::: {.split .wide}
+::: {.text style="font-size:0.95em"}
+Taking "data" and somehow using visual elements so that we can take advantage of our vision to understand data.
+:::
+
+::: {style="font-size:1.25em; padding-top:.4em"}
+::: {.fragment .fade-up}
+Color
+:::
+::: {.fragment .fade-up}
+Position
+:::
+::: {.fragment .fade-up}
+Length
+:::
+::: {.fragment .fade-up}
+Angle
+:::
+::: {.fragment .fade-up .muted}
+From triangles to horses and flowers
+:::
+:::
+:::
+
+## Data is everywhere and we use it all the time
+
+{{< video https://www.youtube.com/watch?v=iqaVe1MCTlA width="960" height="540" >}}
+
+## {.statement}
+
+Visualizations are everywhere
+
+## They are in games we played last year
+
+::: {.center}
+![](images/game-1.png){.frame height="540"}
+:::
+
+## They are in the difficult games we play today
+
+::: {.center}
+![](images/game-2.png){.frame height="540"}
+:::
+
+## It's in the drama around games
+
+::: {.center}
+![](images/steam-chart.png){.frame height="520"}
+:::
+
+## {.notitle}
+
+::: {.center}
+![](images/youtube-1.png){.frame width="1120"}
+
+![](images/youtube-2.png){.frame .fragment width="1120"}
+:::
+
+## What is this visualization about?
+
+::: {.center}
+![](images/vox-map.gif){.frame height="530"}
+:::
+
+## It's in journalism and politics
+
+::: {.center}
+![](images/vox-map.gif){.frame height="530"}
+:::
+
+## Our daily lives have been involved with visualizations
+
+::: {.center}
+![](images/nyt-covid.png){.frame width="1100"}
+:::
+
+## Patterns {.notitle}
+
+::: {.r-stack style="padding-top:1em"}
+<div class="vl" data-chart="vax-scatter" data-step="1"></div>
+
+<div class="vl fragment" data-chart="vax-scatter" data-step="2"></div>
+
+<div class="vl fragment" data-chart="vax-scatter" data-step="3"></div>
+
+::: {.layer .fragment}
+![](images/protest.jpg){.frame height="560"}
+:::
+
+<div class="vl fragment" data-chart="vax-scatter" data-step="5"></div>
+
+<div class="vl fragment" data-chart="vax-scatter" data-step="6"></div>
+
+<div class="vl fragment" data-chart="vax-scatter" data-step="7"></div>
+
+<div class="vl fragment" data-chart="vax-scatter" data-step="8"></div>
+:::
+
+## Visualizations help us navigate our spaces
+
+::: {.img-row}
+![](images/subway-map.jpg){.frame height="400"}
+
+![](images/subway-people.jpg){.frame .fragment height="400"}
+:::
+
+## {.notitle}
+
+::: {.center}
+![](images/google-maps.png){.frame height="640"}
+:::
+
+## We can make them into art forms
+
+::: {.img-row}
+![](images/art-1.png){.frame height="440"}
+
+![](images/art-2.png){.frame .fragment height="440"}
+:::
+
+## Warming stripes {.notitle}
+
+<div class="vl" data-chart="stripes" style="padding-top:4em"></div>
+
+[Warming stripes, after Ed Hawkins. Data: [NASA GISTEMP v4](https://data.giss.nasa.gov/gistemp/)]{.source}
+
+## {.notitle}
+
+::: {.img-row}
+![](images/chungking.png){.frame height="520"}
+
+![](images/movie-barcode.png){.frame .fragment height="520"}
+:::
+
+## We use it to turn big data into meaningful information
+
+::: {.center}
+![](images/network.jpg){.frame height="470"}
+:::
+
+## And learn something about society
+
+::: {.center}
+![](images/network.jpg){.frame height="470"}
+:::
+
+# [02]{.num}What [works?]{.accent} {.section-slide background-color="#1C2430"}
+
+Learning from best practices from psychology and computer science
+
+## Take a look {.notitle}
+
+::: {.split}
+::: {.text}
+::: {.textstack}
+::: {.step .fragment .fade-out data-fragment-index="1"}
+[Take a look at this chart]{.h3}
+
+What can we learn from this chart?
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="1"}
+[Take a look at this chart]{.h3}
+
+Spend some time and read the description with the chart.
+:::
+
+::: {.fragment data-fragment-index="2"}
+[Now this]{.h3}
+
+It requires much less work to read the chart that is designed like this.
+:::
+:::
+:::
+
+::: {.r-stack}
+<div class="vl" data-chart="take-a-look" data-step="1"></div>
+
+<div class="vl fragment" data-chart="take-a-look" data-step="2" data-fragment-index="1"></div>
+
+<div class="vl fragment" data-chart="take-a-look" data-step="3" data-fragment-index="2"></div>
+:::
+:::
+
+[Inspired by: [nytimes.com, One Report, Diverging Perspectives (2012)](http://www.nytimes.com/interactive/2012/10/05/business/economy/one-report-diverging-perspectives.html). Data: [US Bureau of Labor Statistics, via FRED](https://fred.stlouisfed.org/series/UNRATE)]{.source}
+
+## Five lessons
+
+::: {.split .wide}
+::: {.principles}
+::: {.fragment}
+Some visual encodings are noisier
+:::
+::: {.fragment}
+Some illusions distort data
+:::
+::: {.fragment}
+Global statistics are fast
+:::
+::: {.fragment}
+Comparisons are slow
+:::
+::: {.fragment}
+Guide viewers to the right comparisons
+:::
+:::
+
+::: {.center}
+![](images/franconeri-paper.png){.frame height="380"}
+
+[Franconeri, Padilla, Shah, Zacks & Hullman (2021). *The Science of Visual Data Communication: What Works.*]{.tiny}
+:::
+:::
+
+## Encodings {.notitle}
+
+[[01]{.n}Some visual encodings are noisier]{.lesson}
+
+::: {.enc-cols}
+::: {.col}
+::: {.cell}
+**Position**
+
+<div class="vl" data-chart="enc-position"></div>
+:::
+
+::: {.cell .fragment}
+**Length**
+
+<div class="vl" data-chart="enc-length"></div>
+:::
+
+::: {.fragment .caption}
+People are more precise in reading these.
+:::
+:::
+
+::: {.col}
+::: {.cell .fragment}
+**Angle**
+
+<div class="vl" data-chart="enc-angle"></div>
+:::
+
+::: {.cell .fragment}
+**Intensity**
+
+<div class="vl" data-chart="enc-intensity"></div>
+:::
+
+::: {.fragment .caption}
+People are less precise in reading these.
+:::
+:::
+:::
+
+## Non-zero axes {.notitle}
+
+[[02]{.n}Some illusions distort data]{.lesson}
+
+::: {.fig-text}
+::: {.img-row style="gap:3em"}
+<div class="vl" data-chart="nonzero-dots"></div>
+
+<div class="vl" data-chart="nonzero-bars"></div>
+:::
+
+::: {.text}
+Use caution with nonzero axes: viewers tend to overestimate differences… even when the nonzero base is marked.
+:::
+:::
+
+## In the wild {.notitle}
+
+[[02]{.n}Some illusions distort data]{.lesson}
+
+::: {.img-row style="gap:2em; padding-top:.5em"}
+![](images/obamacare.jpg){.frame width="560"}
+
+::: {.r-stack .fragment}
+<div class="vl" data-chart="obamacare-fixed" data-step="1"></div>
+
+<div class="vl fragment" data-chart="obamacare-fixed" data-step="2"></div>
+:::
+:::
+
+## Stacked bars {.notitle}
+
+[[02]{.n}Some illusions distort data]{.lesson}
+
+::: {.fig-text}
+::: {.r-stack}
+<div class="vl" data-chart="stacked-illusion" data-step="1"></div>
+
+<div class="vl fragment" data-chart="stacked-illusion" data-step="2" data-fragment-index="1"></div>
+:::
+
+::: {.text}
+::: {.textstack}
+::: {.step .fragment .fade-out data-fragment-index="1"}
+Stacked bar: bars on the baseline are position-coded = more precise perception.
+:::
+
+::: {.fragment data-fragment-index="1"}
+[These]{.hot .strong} have the same value differences among them as the black bars, but the differences are only visible across the black bars.
+:::
+:::
+:::
+:::
+
+## Lines {.notitle}
+
+[[02]{.n}Some illusions distort data]{.lesson}
+
+::: {.fig-text}
+::: {.r-stack}
+<div class="vl" data-chart="lines-illusion" data-step="1"></div>
+
+<div class="vl fragment" data-chart="lines-illusion" data-step="2" data-fragment-index="1"></div>
+:::
+
+::: {.text}
+The difference is larger for the lighter segments compared with the darker ones, right?
+
+::: {.fragment data-fragment-index="1"}
+That is an illusion: [the differences are identical]{.hot .strong}.
+:::
+:::
+:::
+
+## Backgrounds {.notitle}
+
+[[02]{.n}Some illusions distort data]{.lesson}
+
+::: {.fig-text}
+::: {.r-stack}
+<div class="vl" data-chart="intensity-illusion" data-step="1"></div>
+
+<div class="vl fragment" data-chart="intensity-illusion" data-step="2" data-fragment-index="1"></div>
+:::
+
+::: {.text}
+Intensity values can look different depending on their backgrounds.
+
+::: {.fragment data-fragment-index="1"}
+Do not plot intensities on intensities.
+:::
+:::
+:::
+
+## Dual axes {.notitle}
+
+[[02]{.n}Some illusions distort data]{.lesson}
+
+::: {.img-row style="gap:2.5em; padding-top:.4em"}
+![](images/dual-axis-1.png){.frame height="470"}
+
+![](images/dual-axis-2.png){.frame .fragment height="470"}
+:::
+
+[Figures 2.4 and 2.5 from Alberto Cairo, *The Truthful Art* (2016).]{.source}
+
+## Global statistics are fast {.notitle}
+
+[[03]{.n}Global statistics are fast]{.lesson}
+
+::: {.img-row style="gap:4em; align-items:flex-start; padding-top:1em"}
+::: {.r-stack}
+<div class="vl" data-chart="ensemble-dots" data-step="1"></div>
+
+<div class="vl fragment" data-chart="ensemble-dots" data-step="2"></div>
+:::
+
+::: {.r-stack .fragment}
+<div class="vl" data-chart="ensemble-bars" data-step="1"></div>
+
+<div class="vl fragment" data-chart="ensemble-bars" data-step="2"></div>
+:::
+:::
+
+## Comparisons {.notitle}
+
+::: {.textstack}
+::: {.step .fragment .fade-out data-fragment-index="3"}
+[[04]{.n}Comparisons are slow]{.lesson}
+:::
+
+::: {.fragment data-fragment-index="3"}
+[[05]{.n}So, guide viewers to the right comparisons]{.lesson}
+:::
+:::
+
+::: {.fig-text}
+::: {.r-stack}
+<div class="vl" data-chart="pairs" data-step="1"></div>
+
+<div class="vl fragment" data-chart="pairs" data-step="2" data-fragment-index="2"></div>
+
+<div class="vl fragment" data-chart="pairs" data-step="3" data-fragment-index="3"></div>
+
+<div class="vl fragment" data-chart="pairs" data-step="4" data-fragment-index="4"></div>
+:::
+
+::: {.text}
+::: {.textstack}
+::: {.fragment .fade-out data-fragment-index="3"}
+::: {.fragment data-fragment-index="1"}
+Isolating pairs with "larger second values" is tough…
+:::
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="3"}
+Tool: shortcut comparisons by adding direct depictions of the deltas, as below.
+:::
+:::
+:::
+:::
+
+## Recap
+
+::: {.split .wide}
+::: {.principles}
+::: {.step}
+Some visual encodings are noisier to read
+:::
+::: {.step}
+Some illusions distort data
+:::
+::: {.step}
+Global statistics are fast
+:::
+::: {.step}
+Comparisons are slow
+:::
+::: {.step}
+Guide viewers to the right comparisons
+:::
+:::
+
+::: {.center}
+![](images/franconeri-figure.png){.frame height="520"}
+:::
+:::
+
+## {.statement}
+
+[1 · Simplify]{.fragment .fade-up}<br>[2 · Structure]{.fragment .fade-up}<br>[3 · Story]{.fragment .fade-up}
+
+# [03]{.num}Let's [practice]{.accent} {.section-slide background-color="#1C2430"}
+
+## Example 1 {.notitle}
+
+::: {.split}
+::: {.text}
+::: {.textstack}
+::: {.step .fragment .fade-out data-fragment-index="1"}
+[Example 1]{.kicker}
+
+[Let's transform this chart]{.h3}
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="1"}
+[Transform legends]{.h3}
+
+Our eyes have to move back and forth between the legend and the chart to find the appropriate line.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="2"}
+[Transform legends]{.h3}
+
+So we can potentially remove the legend from the top.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="3"}
+[Directly label lines]{.h3}
+
+Now we can quickly find the different countries in the chart.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="4"}
+[Annotate charts to tell a story.]{.h3}
+
+We can use some of the text to directly annotate the chart.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="5"}
+[Highlight an element of the chart]{.h3}
+
+If an element in the chart is important, we can guide the reader's eyes with opacity and highlighting.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="6"}
+[Use simpler charts if trends are less important]{.h3}
+
+We can simplify the chart to only focus on important comparisons. This chart makes it easier to compare rates across countries.
+:::
+
+::: {.fragment data-fragment-index="7"}
+[Different kinds of comparisons]{.h3}
+
+This chart makes it easier to compare before and after values within each country.
+:::
+:::
+:::
+
+::: {.chart-col}
+::: {.textstack .article-slot}
+::: {.article .step .fragment .fade-out data-fragment-index="1"}
+Since 1990, emissions in India and China have grown about five-fold. The UK has cut its emissions roughly in half, while Canada's are still almost 20% above their 1990 level.
+:::
+
+::: {.article .fragment .fade-in-then-out data-fragment-index="4"}
+Since 1990, emissions in India and China have grown about five-fold. The UK has cut its emissions roughly in half, while Canada's are still almost 20% above their 1990 level.
+:::
+:::
+
+::: {.r-stack}
+<div class="vl" data-chart="ex1" data-step="1"></div>
+
+<div class="vl fragment" data-chart="ex1" data-step="1" data-fragment-index="1"></div>
+
+<div class="vl fragment" data-chart="ex1" data-step="2" data-fragment-index="2"></div>
+
+<div class="vl fragment" data-chart="ex1" data-step="3" data-fragment-index="3"></div>
+
+<div class="vl fragment" data-chart="ex1" data-step="4" data-fragment-index="4"></div>
+
+<div class="vl fragment" data-chart="ex1" data-step="5" data-fragment-index="5"></div>
+
+<div class="vl fragment" data-chart="ex1" data-step="6" data-fragment-index="6"></div>
+
+<div class="vl fragment" data-chart="ex1" data-step="7" data-fragment-index="7"></div>
+:::
+:::
+:::
+
+[Data: [Our World in Data, annual CO₂ emissions](https://github.com/owid/co2-data)]{.source}
+
+## Example 2 {.notitle}
+
+::: {.split}
+::: {.text}
+::: {.textstack}
+::: {.step .fragment .fade-out data-fragment-index="1"}
+[Example 2]{.kicker}
+
+[A lot of information in here]{.h3}
+
+We can make it easier to read this chart.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="1"}
+[Lines are better understood as trends]{.h3}
+
+Focus the eyes on the trend.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="2"}
+[Remove redundant information]{.h3}
+
+If the colors are secondary information, we can make them less salient. Because they might confuse users.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="3"}
+[Dual axes are confusing]{.h3}
+
+It's hard to distinguish the two without reading the text. Let's keep one axis for now.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="4"}
+[Move the second chart]{.h3}
+
+Our chart is simplified. But we still need the El Niño context.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="5"}
+[Below the main chart]{.h3}
+
+We can move the El Niño chart below.
+:::
+
+::: {.fragment data-fragment-index="6"}
+[Annotations are very useful]{.h3}
+
+The two charts share the same x-axis (time), and the same information is kept. We can add annotations to improve the message.
+:::
+:::
+:::
+
+::: {.r-stack}
+<div class="vl" data-chart="ex2" data-step="1"></div>
+
+<div class="vl fragment" data-chart="ex2" data-step="2" data-fragment-index="1"></div>
+
+<div class="vl fragment" data-chart="ex2" data-step="3" data-fragment-index="2"></div>
+
+<div class="vl fragment" data-chart="ex2" data-step="5" data-fragment-index="4"></div>
+
+<div class="vl fragment" data-chart="ex2" data-step="6" data-fragment-index="5"></div>
+
+<div class="vl fragment" data-chart="ex2" data-step="7" data-fragment-index="6"></div>
+:::
+:::
+
+[Data: [NASA GISTEMP v4](https://data.giss.nasa.gov/gistemp/) (°C above 1880–1900); [NOAA Oceanic Niño Index](https://psl.noaa.gov/data/correlation/oni.data)]{.source}
+
+## Example 3 {.notitle}
+
+::: {.split .wide}
+::: {.text}
+::: {.textstack}
+::: {.step .fragment .fade-out data-fragment-index="1"}
+[Example 3]{.kicker}
+
+[It's hard to calculate differences]{.h3}
+
+It seems like the light and dark bars are for two different points in time.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="1"}
+[Derive the proper information for the audience]{.h3}
+
+We can visualize the deltas to help with comparing the differences between these values.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="2"}
+[The deltas look like this]{.h3}
+
+We can visualize the deltas to help with comparing the differences between these values.
+:::
+
+::: {.fragment .fade-in-then-out data-fragment-index="3"}
+[Grouped bar → simple bar]{.h3}
+
+We can visualize the deltas to help with comparing the differences between these values.
+:::
+
+::: {.fragment data-fragment-index="4"}
+[Color code groups]{.h3}
+
+We can differentiate between positive and negative rates using color.
+:::
+:::
+:::
+
+::: {.r-stack}
+<div class="vl" data-chart="ex3" data-step="1"></div>
+
+<div class="vl fragment" data-chart="ex3" data-step="2" data-fragment-index="1"></div>
+
+<div class="vl fragment" data-chart="ex3" data-step="3" data-fragment-index="2"></div>
+
+<div class="vl fragment" data-chart="ex3" data-step="4" data-fragment-index="3"></div>
+
+<div class="vl fragment" data-chart="ex3" data-step="5" data-fragment-index="4"></div>
+:::
+:::
+
+[Data: [Our World in Data, CO₂ emissions per person](https://github.com/owid/co2-data)]{.source}
+
+## Example 4 {.notitle}
+
+::: {.split}
+::: {.text}
+::: {.textstack}
+::: {.step .fragment .fade-out data-fragment-index="1"}
+[Example 4]{.kicker}
+
+[Let's transform this chart]{.h3}
+:::
+
+::: {.fragment data-fragment-index="1"}
+[Reorganize the data]{.h3}
+:::
+:::
+:::
+
+<div class="vl" data-chart="ads" style="padding-top:2.2em"></div>
+:::
+
+<span class="fragment" data-chart-event="regroup" data-fragment-index="1"></span>
+
+[Figures 5.15 and 5.16 from Alberto Cairo, *The Truthful Art* (2016). Values read from the figures.]{.source}
+
+# [04]{.num}How we design<br>[changes the story]{.accent} {.section-slide background-color="#1C2430"}
+
+## Health plan {.notitle}
+
+::: {.img-row style="gap:2em; padding-top:1em"}
+![](images/health-plan-jec.jpg){.frame height="540"}
+
+![](images/health-plan-redesign.png){.frame .fragment height="540"}
+:::
+
+[Left: Joint Economic Committee, Republican staff (Rep. Kevin Brady), 2009, as discussed on the [Cato blog](https://www.cato.org/blog/jecgop-chart-house-democrats-health-plan). Right: a redesign of the same chart, 2009.]{.source}
+
+## Same report, two stories {.notitle}
+
+::: {.img-row style="gap:3em; align-items:flex-start; padding-top:1.5em"}
+::: {.party}
+[How a **Republican** might see it]{.party-label .hot}
+
+<div class="vl" data-chart="unemp-gop"></div>
+:::
+
+::: {.party .fragment}
+[How a **Democrat** might see it]{.party-label .cool}
+
+<div class="vl" data-chart="unemp-dem"></div>
+:::
+:::
+
+[After: Bostock, Carter, Cox & Quealy, [One Report, Diverging Perspectives](https://www.nytimes.com/interactive/2012/10/05/business/economy/one-report-diverging-perspectives.html), The New York Times, Oct 5, 2012. Data: [US Bureau of Labor Statistics, via FRED](https://fred.stlouisfed.org/series/UNRATE)]{.source}
+
+## Immigration and housing {.notitle}
+
+::: {.r-stack style="padding-top:1em"}
+<div class="vl" data-chart="immigration" data-step="1"></div>
+
+<div class="vl fragment" data-chart="immigration" data-step="2"></div>
+
+<div class="vl fragment" data-chart="immigration" data-step="3"></div>
+:::
+
+[Values traced from the original charts. Sources: [American Community Survey (ACS), U.S. Census Bureau](https://www.census.gov/programs-surveys/acs); [Zillow Home Value Index (ZHVI)](https://www.zillow.com/research/data/)]{.source}
+
+## These Graphs Prove That Canada's Housing Crisis Is Driven By Immigration
+
+::: {.center}
+![](images/reddit-housing.png){.frame height="500"}
+:::
+
+[[reddit.com/r/canadian](https://www.reddit.com/r/canadian/comments/1fwagm5/these_graphs_prove_that_canadas_housing_crisis_is/)]{.source}
+
+## Tax cuts {.notitle}
+
+::: {.img-row style="gap:3em; padding-top:2em"}
+![](images/fox-tax-cuts.png){.frame height="440"}
+
+::: {.fragment}
+<div class="vl" data-chart="tax-cuts"></div>
+:::
+:::
+
+## Gun deaths {.notitle}
+
+::: {.img-row style="gap:2.5em; padding-top:1em"}
+![](images/florida-reuters.png){.frame height="560"}
+
+![](images/florida-redrawn.png){.frame .fragment height="430"}
+:::
+
+[Left: Reuters (C. Chan, 2014). Data: Florida Department of Law Enforcement.]{.source}
+
+## Vaccines kill {.notitle}
+
+::: {.center}
+![](images/vaccines-kill.png){.frame height="600"}
+:::
+
+## Vaccines save {.notitle}
+
+::: {.split .wide}
+::: {.text style="font-size:1em; padding-top:2em"}
+The count of just about anything correlates with the number of people in the region
+
+How you choose your data is part of the storytelling
+:::
+
+::: {.center}
+![](images/vaccines-save.png){.frame height="580"}
+:::
+:::
+
+## There is an art to storytelling with visualizations
+
+{{< video https://www.youtube.com/watch?v=jbkSRLYSojo width="960" height="540" >}}
+
+[Hans Rosling's 200 Countries, 200 Years, 4 Minutes. *The Joy of Stats*, BBC (2010).]{.source}
+
+## Ahvaz and the Karun {.notitle background-iframe="story/index.html" background-interactive="true"}
+
+# Thank you {.section-slide background-color="#1C2430"}

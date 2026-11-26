@@ -1,0 +1,832 @@
+/* ==========================================================================
+   MODIFIABLE THEME TOKENS
+   Edit any color, font, or width below to restyle the entire story,
+   including the map, elevation diagram, and data charts.
+   ========================================================================== */
+
+:root {
+  /* Core palette (inspired by the dark Ahvaz map reference) */
+  --bg: #1e2022;
+  --bg-elevated: #25282b;
+  --surface: rgba(24, 26, 29, 0.9);
+  --surface-soft: rgba(24, 26, 29, 0.74);
+  --surface-border: rgba(255, 255, 255, 0.11);
+
+  /* Typography colors */
+  --ink: #f4f6f5;
+  --ink-body: rgba(238, 242, 240, 0.92);
+  --ink-muted: #9ca6aa;
+  --ink-faint: #6f787d;
+
+  /* Map & diagram colors */
+  --land: #262a2e;
+  --land-iran: #2e3439;
+  --border: #434b52;
+  --water-sea: #161a1e;
+
+  --city-roads: #31829b;
+  --city-roads-minor: #245b6d;
+  --watermark: rgba(232, 236, 235, 0.24);
+
+  /* River & water */
+  --river: #6bc4a2;
+  --river-deep: #489c80;
+  --river-dry: #9a7d5a;
+  --river-bank: #3a342e;
+
+  /* Story highlights & data encodings */
+  --boat: #f4d35e;
+  --accent: #6bc4a2;
+  --alert: #e47147;
+  --alert-soft: rgba(228, 113, 71, 0.24);
+  --industry: #e8a848;
+  --transfer: #5fb4e5;
+  --context: #667078;
+  --grid: rgba(255, 255, 255, 0.08);
+
+  /* Typography */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Layout */
+  --card-max-width: 470px;
+  --card-radius: 12px;
+  --transition-speed: 650ms;
+}
+
+/* ==========================================================================
+   BASE LAYOUT
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Progress rail on top */
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--river);
+  z-index: 60;
+  transition: width 120ms linear;
+}
+
+/* Minimal top HUD (no style button) */
+.top-hud {
+  position: fixed;
+  top: 14px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.hud-pill {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--ink-muted);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+}
+
+.hud-pill strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   SCROLLYTELLING SHELL
+   ========================================================================== */
+
+.scrolly {
+  position: relative;
+  width: 100%;
+}
+
+/* Sticky full-viewport visual stage */
+.stage-wrap {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stage-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.stage-layer.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#map-svg,
+#elevation-svg,
+#chart-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.stage-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 60% 50%, transparent 48%, rgba(0, 0, 0, 0.26) 100%);
+}
+
+/* ==========================================================================
+   SINGLE PHOTO SPOTLIGHT (Anchored adjacent to geographic locations)
+   ========================================================================== */
+
+.photo-spotlight {
+  position: fixed;
+  top: 50%;
+  right: 3.5vw;
+  width: min(390px, 34vw);
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(0.96);
+  transition: opacity 420ms ease, transform 420ms ease, left 450ms ease, top 450ms ease;
+  z-index: 16;
+  cursor: pointer;
+}
+
+.photo-spotlight.is-visible {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+  pointer-events: auto;
+}
+
+/* When anchored dynamically to a map coordinate, top/left are exact screen coords */
+.photo-spotlight.is-anchored {
+  right: auto;
+  transform: scale(0.96);
+}
+
+.photo-spotlight.is-anchored.is-visible {
+  transform: scale(1);
+}
+
+.photo-spotlight img {
+  display: block;
+  width: 100%;
+  max-height: 400px;
+  height: 255px;
+  object-fit: cover;
+}
+
+.photo-spotlight.is-portrait img {
+  height: 390px;
+  object-position: center 22%;
+}
+
+.photo-spotlight.no-caption img {
+  height: 395px;
+}
+
+.photo-spotlight.no-caption .photo-caption {
+  display: none;
+}
+
+.photo-spotlight .photo-caption {
+  padding: 13px 16px;
+}
+
+.photo-spotlight .photo-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 4px;
+  line-height: 1.32;
+}
+
+.photo-spotlight .photo-meta {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   VIDEO OVERLAY CARD (Aghasi local clip & Uncle local clip)
+   ========================================================================== */
+
+.video-spotlight {
+  position: absolute;
+  right: 3.5vw;
+  top: 50%;
+  transform: translateY(-50%) translateX(18px);
+  width: min(460px, 40vw);
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 460ms ease, transform 460ms ease;
+  z-index: 18;
+}
+
+.video-spotlight.is-visible {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+  pointer-events: auto;
+}
+
+.video-frame {
+  position: relative;
+  width: 100%;
+  background: #0d0f11;
+}
+
+.video-frame.ratio-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+.video-frame.ratio-square {
+  aspect-ratio: 1 / 1;
+  max-height: 410px;
+}
+
+.video-frame video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.video-caption {
+  padding: 14px 16px 16px;
+}
+
+.video-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.video-meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
+.video-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.video-btn {
+  cursor: pointer;
+  padding: 7px 13px;
+  border-radius: 6px;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--river);
+  color: #111618;
+  transition: opacity 150ms ease;
+}
+
+.video-btn.secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.video-btn:hover {
+  opacity: 0.88;
+}
+
+/* ==========================================================================
+   LIGHTBOX MODAL
+   ========================================================================== */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 14, 0.88);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+  padding: 24px;
+}
+
+.lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.lightbox-inner {
+  max-width: 860px;
+  width: 100%;
+  background: var(--bg-elevated);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.lightbox-inner img {
+  width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  background: #0d0e10;
+  display: block;
+}
+
+.lightbox-bar {
+  padding: 15px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lightbox-close {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.lightbox-source {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--river);
+}
+
+/* ==========================================================================
+   SCROLL STEPS (BORDERLESS STORY TEXT WITH ACCENT HIGHLIGHTS)
+   ========================================================================== */
+
+.steps-track {
+  position: relative;
+  z-index: 20;
+  margin-top: -100vh;
+  pointer-events: none;
+}
+
+.step {
+  min-height: 92vh;
+  display: flex;
+  align-items: center;
+  padding: 24px 0 24px 4.2vw;
+}
+
+.step:first-child {
+  min-height: 100vh;
+  align-items: flex-end;
+  padding-bottom: 11vh;
+}
+
+.step:last-child {
+  min-height: 100vh;
+}
+
+.step-card {
+  pointer-events: auto;
+  width: min(var(--card-max-width), 90vw);
+  padding: 26px 28px;
+  border-radius: var(--card-radius);
+  background: var(--surface-soft);
+  border: none;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: none;
+  opacity: 0.22;
+  transform: translateY(10px);
+  transition: opacity 320ms ease, transform 320ms ease;
+}
+
+.step.is-active .step-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.step-body {
+  font-family: var(--font-sans);
+  font-size: 22.5px;
+  font-weight: 400;
+  line-height: 1.56;
+  letter-spacing: -0.005em;
+  margin: 0;
+  color: var(--ink-body);
+}
+
+.step-body + .step-body {
+  margin-top: 14px;
+}
+
+/* Accent color highlights for key points (replaces repetitive headings) */
+.hl {
+  color: var(--river);
+  font-weight: 600;
+}
+
+.hl-alert {
+  color: var(--alert);
+  font-weight: 600;
+}
+
+.hl-boat {
+  color: var(--boat);
+  font-weight: 600;
+}
+
+.hl-water {
+  color: var(--transfer);
+  font-weight: 600;
+}
+
+.hl-industry {
+  color: var(--industry);
+  font-weight: 600;
+}
+
+.step-note {
+  margin-top: 14px;
+  font-size: 14px;
+  color: var(--ink-muted);
+  line-height: 1.45;
+}
+
+.step-sources {
+  margin-top: 13px;
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.step-sources strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.step-sources a {
+  color: var(--river);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.step.tone-alert .step-sources a {
+  color: var(--alert);
+}
+
+.step.tone-industry .step-sources a {
+  color: var(--industry);
+}
+
+.scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.scroll-cue .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--river);
+  animation: pulseDot 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+
+/* Interactive chart toggle inside data step cards */
+.inline-controls {
+  margin-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip-btn {
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: var(--font-sans);
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: var(--ink-muted);
+  transition: all 160ms ease;
+}
+
+.chip-btn.is-active,
+.chip-btn:hover {
+  color: #111618;
+  background: var(--river);
+  font-weight: 600;
+}
+
+.step.tone-alert .chip-btn.is-active,
+.step.tone-alert .chip-btn:hover {
+  background: var(--alert);
+  color: #111618;
+}
+
+/* Step nav dots on far right */
+.step-dots {
+  position: fixed;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 45;
+}
+
+.step-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: var(--ink-faint);
+  opacity: 0.45;
+  transition: transform 200ms ease, background-color 200ms ease, opacity 200ms ease;
+}
+
+.step-dot:hover {
+  opacity: 0.9;
+  transform: scale(1.35);
+}
+
+.step-dot.is-active {
+  background: var(--river);
+  opacity: 1;
+  transform: scale(1.5);
+}
+
+/* ==========================================================================
+   SVG STYLING HOOKS
+   ========================================================================== */
+
+.map-country {
+  fill: var(--land);
+  stroke: var(--border);
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+  transition: fill 400ms ease, stroke 400ms ease;
+}
+
+.map-country.is-iran {
+  fill: var(--land-iran);
+  stroke: var(--river);
+  stroke-opacity: 0.5;
+  stroke-width: 1.2;
+}
+
+.map-country.is-syria {
+  fill: var(--land-iran);
+  stroke: var(--alert);
+  stroke-opacity: 0.65;
+  stroke-width: 1.2;
+}
+
+.map-country.is-canada {
+  fill: var(--land-iran);
+  stroke: var(--transfer);
+  stroke-opacity: 0.6;
+  stroke-width: 1.2;
+}
+
+.ahvaz-road {
+  fill: none;
+  stroke: var(--city-roads);
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ahvaz-road.tier-3 {
+  stroke: var(--city-roads-minor);
+  opacity: 0.76;
+}
+
+.ahvaz-watermark {
+  fill: var(--watermark);
+  font-family: "Geeza Pro", "Tahoma", "Arial", sans-serif;
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  user-select: none;
+}
+
+.karun-ribbon {
+  fill: none;
+  stroke: var(--river);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.karun-bank-dry {
+  fill: none;
+  stroke: var(--river-dry);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+
+.map-label {
+  fill: var(--ink);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 16.5px;
+  letter-spacing: 0.01em;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 5.5px;
+  stroke-linejoin: round;
+}
+
+.map-sublabel {
+  fill: var(--ink);
+  opacity: 0.88;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13.5px;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4.5px;
+  stroke-linejoin: round;
+}
+
+@keyframes flowDash {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+.transfer-path {
+  animation: flowDash 1.4s linear infinite;
+}
+
+.chart-axis text {
+  fill: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+
+.chart-axis path,
+.chart-axis line {
+  stroke: var(--grid);
+}
+
+.chart-title {
+  fill: var(--ink);
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.chart-subtitle {
+  fill: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+.chart-anno {
+  fill: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.chart-anno-sub {
+  fill: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+}
+
+.chart-source {
+  fill: var(--ink-faint);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+/* Footer sources */
+.story-footer {
+  position: relative;
+  z-index: 25;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--surface-border);
+  padding: 56px 6vw 72px;
+}
+
+.footer-inner {
+  max-width: 860px;
+}
+
+.footer-inner h2 {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  margin: 0 0 14px;
+}
+
+.footer-inner p,
+.footer-inner li {
+  font-size: 14.5px;
+  color: var(--ink-muted);
+  line-height: 1.65;
+}
+
+.footer-inner ul {
+  padding-left: 18px;
+}
+
+@media (max-width: 900px) {
+  .step {
+    padding: 20px 16px;
+    align-items: flex-end;
+    padding-bottom: 6vh;
+  }
+  .step-body {
+    font-size: 19px;
+  }
+  .photo-spotlight,
+  .photo-spotlight.is-anchored,
+  .video-spotlight {
+    right: 16px !important;
+    left: 16px !important;
+    top: 66px !important;
+    width: auto;
+    transform: none !important;
+  }
+  .photo-spotlight img,
+  .photo-spotlight.is-portrait img,
+  .photo-spotlight.no-caption img {
+    height: 190px;
+  }
+  .step-dots {
+    display: none;
+  }
+}

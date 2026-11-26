@@ -1,0 +1,7 @@
+# originals and local files (not published)
+*.pptx
+~$*
+.DS_Store
+.vscode/
+.quarto/
+images/PXL_*.mp4

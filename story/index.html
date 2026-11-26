@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ahvaz and the Karun</title>
+  <link rel="stylesheet" href="theme.css" />
+</head>
+<body>
+  <!-- Scroll progress rail -->
+  <div class="progress-bar" id="progress-bar"></div>
+
+  <!-- Minimal top counter -->
+  <header class="top-hud">
+    <div class="hud-pill" id="hud-act">
+      <strong>Ahvaz &amp; the Karun</strong>
+      <span id="hud-step-label">01 / 37</span>
+    </div>
+  </header>
+
+  <!-- Right-side step jump dots -->
+  <nav class="step-dots" id="step-dots" aria-label="Story sections"></nav>
+
+  <!-- Main Scrollytelling Container -->
+  <main class="scrolly">
+    <!-- Sticky full-viewport visual stage -->
+    <div class="stage-wrap" id="stage-wrap">
+      <!-- Layer 1: Geographic Map -->
+      <div class="stage-layer" id="layer-map">
+        <svg id="map-svg" role="img" aria-label="Interactive layered map of Ahvaz, Iran, British Columbia, and global water events"></svg>
+      </div>
+
+      <!-- Layer 2: River Cross-Section / Elevation View (Past vs Now) -->
+      <div class="stage-layer is-hidden" id="layer-elevation">
+        <svg id="elevation-svg" role="img" aria-label="Cross-section of the Karun River comparing past and current water levels"></svg>
+      </div>
+
+      <!-- Layer 3: Directly-Annotated Water & Wildfire Charts -->
+      <div class="stage-layer is-hidden" id="layer-chart">
+        <svg id="chart-svg" role="img" aria-label="Charts of Karun discharge, Iran freshwater, and British Columbia rainfall and wildfires"></svg>
+      </div>
+
+      <div class="stage-vignette"></div>
+
+      <!-- Single photo spotlight (shown one-by-one; anchored adjacent to pins on map steps) -->
+      <figure class="photo-spotlight" id="photo-spotlight">
+        <img id="spotlight-img" src="images/ahvaz_alireza_palm.png" alt="Photograph" />
+        <figcaption class="photo-caption">
+          <p class="photo-title" id="spotlight-title"></p>
+          <p class="photo-meta" id="spotlight-meta"></p>
+        </figcaption>
+      </figure>
+
+      <!-- Native video spotlight (Aghasi 0:35-0:50 clip & Uncle 0:08-0:12 clip) -->
+      <div class="video-spotlight" id="video-spotlight" aria-label="Video player">
+        <div class="video-frame ratio-4-3" id="video-frame"></div>
+        <div class="video-caption">
+          <p class="video-title" id="video-title"></p>
+          <p class="video-meta" id="video-meta"></p>
+          <div class="video-controls" id="video-controls"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll narrative steps (populated from story-content.js) -->
+    <div class="steps-track" id="steps-track"></div>
+  </main>
+
+  <!-- Verifiable Data & Photo Sources Footer -->
+  <footer class="story-footer">
+    <div class="footer-inner">
+      <h2>Data sources</h2>
+      <ul>
+        <li>
+          <strong>Ahvaz street grid &amp; Karun River channel:</strong>
+          <a href="https://www.openstreetmap.org/#map=12/31.320/48.680" target="_blank" rel="noopener">OpenStreetMap contributors</a> (2,431 road segments and the Karun River centerline through Ahvaz).
+        </li>
+        <li>
+          <strong>National &amp; world boundaries:</strong>
+          <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth 50m</a> via World Atlas TopoJSON.
+        </li>
+        <li>
+          <strong>Karun River annual mean discharge at Ahvaz station (1960–2023 benchmarks):</strong>
+          <a href="https://www.iranicaonline.org/articles/karun-river" target="_blank" rel="noopener">Encyclopaedia Iranica ("Karun River")</a>,
+          <a href="https://doi.org/10.5897/AJAR12.650" target="_blank" rel="noopener">Salarijazi et al. (2012), <em>African Journal of Agricultural Research</em></a>, and
+          <a href="https://www.witpress.com/elibrary/wit-transactions-on-ecology-and-the-environment/103/17510" target="_blank" rel="noopener">Afkhami et al. (WIT Transactions)</a>.
+        </li>
+        <li>
+          <strong>Renewable internal freshwater per person (Iran, Iraq, Syria, 1961–2022) &amp; Water Stress:</strong>
+          <a href="https://data.worldbank.org/indicator/ER.H2O.INTR.PC?locations=IR-IQ-SY" target="_blank" rel="noopener">World Bank WDI / FAO AQUASTAT (<code>ER.H2O.INTR.PC</code>)</a>
+          and
+          <a href="https://data.worldbank.org/indicator/ER.H2O.FWST.ZS?locations=IR-IQ-SY" target="_blank" rel="noopener"><code>ER.H2O.FWST.ZS</code></a>
+          (Iran 81.3% annual withdrawal; Falkenmark thresholds: 1,700 m³ stress, 1,000 m³ scarcity).
+        </li>
+        <li>
+          <strong>British Columbia November 2021 atmospheric river rainfall vs. historical normal:</strong>
+          <a href="https://climate.weather.gc.ca/" target="_blank" rel="noopener">Environment and Climate Change Canada (ECCC)</a> station records for Hope, Abbotsford, Chilliwack, Nanaimo, Victoria, and Vancouver.
+        </li>
+        <li>
+          <strong>British Columbia annual wildfire count &amp; hectares burned (2014–2024):</strong>
+          <a href="https://www2.gov.bc.ca/gov/content/safety/wildfire-status/about-bcws/wildfire-statistics/wildfire-averages" target="_blank" rel="noopener">BC Wildfire Service (Government of British Columbia)</a>.
+        </li>
+        <li>
+          <strong>Iran drought basins, water policy, inter-basin transfers &amp; industrial siting:</strong>
+          <a href="https://doi.org/10.1007/s13412-014-0182-z" target="_blank" rel="noopener">Madani, K. (2014), <em>Journal of Environmental Studies and Sciences</em></a>
+          and <a href="https://water.fanack.com/iran/" target="_blank" rel="noopener">Fanack Water — Iran</a>.
+        </li>
+        <li>
+          <strong>Tigris–Euphrates / Syria regional water loss:</strong>
+          <a href="https://doi.org/10.1002/wrcr.20078" target="_blank" rel="noopener">Voss et al. (2013), NASA GRACE in <em>Water Resources Research</em></a>
+          and <a href="https://reliefweb.int/" target="_blank" rel="noopener">UN OCHA / ReliefWeb</a>.
+        </li>
+        <li>
+          <strong>Folk song clip:</strong>
+          Aghasi — <em>Labe Karoon</em> (0:35–0:50), <a href="https://www.youtube.com/watch?v=JWoy45idGvE&t=35s" target="_blank" rel="noopener">YouTube source ↗</a>.
+        </li>
+      </ul>
+
+      <h2 style="margin-top:28px;">Photograph &amp; satellite image sources</h2>
+      <ul id="photo-sources-list"></ul>
+    </div>
+  </footer>
+
+  <!-- Photo lightbox -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photograph preview">
+    <div class="lightbox-inner">
+      <img id="lightbox-img" src="" alt="" />
+      <div class="lightbox-bar">
+        <div>
+          <strong id="lightbox-title" style="display:block;font-size:15px;margin-bottom:4px;"></strong>
+          <span id="lightbox-desc" style="display:block;font-size:13px;color:var(--ink-muted);line-height:1.45;"></span>
+          <a id="lightbox-source" class="lightbox-source" href="#" target="_blank" rel="noopener"></a>
+        </div>
+        <button class="lightbox-close" id="lightbox-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Local vendor libraries & story modules (works offline and from file://) -->
+  <script src="vendor/d3.min.js"></script>
+  <script src="vendor/topojson-client.min.js"></script>
+  <script src="data/story-data.js"></script>
+  <script src="story-content.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
