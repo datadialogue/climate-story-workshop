@@ -12,11 +12,15 @@
   <!-- Scroll progress rail -->
   <div class="progress-bar" id="progress-bar"></div>
 
-  <!-- Minimal top counter -->
+  <!-- Minimal top counter (+ subtle touch step controls on mobile) -->
   <header class="top-hud">
     <div class="hud-pill" id="hud-act">
       <strong>Ahvaz &amp; the Karun</strong>
       <span id="hud-step-label">01 / 37</span>
+    </div>
+    <div class="hud-nav" aria-label="Step navigation">
+      <button class="hud-nav-btn" id="btn-prev-step" aria-label="Previous step">↑</button>
+      <button class="hud-nav-btn" id="btn-next-step" aria-label="Next step">↓</button>
     </div>
   </header>
 

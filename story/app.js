@@ -189,9 +189,27 @@
   let currentCamView = null;
   let activeZoomTimer = null;
 
+  function isMobile() {
+    return width <= 900;
+  }
+
+  function isNarrowPhone() {
+    return width <= 560;
+  }
+
+  function clampLabelX(x, pad = 16) {
+    return Math.max(pad, Math.min(width - pad, x));
+  }
+
   function stageFocusCenter() {
-    if (width <= 900) {
-      return [width * 0.5, height * 0.36];
+    if (isMobile()) {
+      const hasTopMedia =
+        photoSpotlight.classList.contains("is-visible") ||
+        videoSpotlight.classList.contains("is-visible");
+      if (currentStepId === "closing-world") {
+        return [width * 0.5, height * 0.34];
+      }
+      return [width * 0.5, hasTopMedia ? height * 0.54 : height * 0.38];
     }
     if (currentStepId === "closing-world") {
       return [width * 0.56, height * 0.52];
@@ -690,10 +708,14 @@
       "low-water": "Lower water · exposed banks & waste",
       closing: "Ahvaz · Karun River"
     };
+    const mob = isMobile();
+    const labelAnchor = mob && pos.x > width * 0.58 ? "end" : "start";
+    const labelOffsetX = labelAnchor === "end" ? -24 : 30;
     boatLab
-      .attr("x", pos.x + 34)
-      .attr("y", pos.y - 30)
-      .attr("font-size", 17)
+      .attr("x", clampLabelX(pos.x + labelOffsetX, 14))
+      .attr("y", Math.max(66, pos.y - (mob ? 24 : 30)))
+      .attr("text-anchor", labelAnchor)
+      .attr("font-size", mob ? 14 : 17)
       .attr("fill", boatMode === "stuck" || boatMode === "low-water" ? "var(--alert)" : "var(--boat)")
       .text(labelMap[boatMode] || "");
   }
@@ -957,9 +979,11 @@
     gClosing.selectAll("*").remove();
 
     if (mapOverlayState.worldClosing) {
+      const mob = isMobile();
+      const mobileKeep = new Set(["bc", "mead", "amazon", "po", "chad", "syria", "ahvaz", "pakistan", "australia"]);
       DATA.worldClosingEvents.forEach((ev) => {
         const [x, y] = lonLatToScreen(ev.lon, ev.lat, view);
-        if (x < 20 || x > width - 20 || y < 20 || y > height - 20) return;
+        if (x < 12 || x > width - 12 || y < 50 || y > height - 20) return;
 
         const color =
           ev.type === "home"
@@ -969,24 +993,32 @@
               : "var(--alert)";
 
         const g = gClosing.append("g");
-        g.append("circle").attr("cx", x).attr("cy", y).attr("r", ev.type === "home" ? 20 : 15).attr("fill", color).attr("opacity", 0.28);
-        g.append("circle").attr("cx", x).attr("cy", y).attr("r", ev.type === "home" ? 7.5 : 6).attr("fill", color).attr("stroke", "var(--bg)").attr("stroke-width", 2);
+        g.append("circle").attr("cx", x).attr("cy", y).attr("r", mob ? (ev.type === "home" ? 13 : 9) : ev.type === "home" ? 20 : 15).attr("fill", color).attr("opacity", 0.28);
+        g.append("circle").attr("cx", x).attr("cy", y).attr("r", mob ? (ev.type === "home" ? 5.5 : 4.2) : ev.type === "home" ? 7.5 : 6).attr("fill", color).attr("stroke", "var(--bg)").attr("stroke-width", mob ? 1.5 : 2);
+
+        if (mob && !mobileKeep.has(ev.id)) return;
+
+        const dx = mob ? (ev.dx > 0 ? 7 : -7) : ev.dx;
+        const dy = mob ? (ev.dy > 0 ? 10 : -5) : ev.dy;
+        const anchor = mob ? (x > width * 0.72 ? "end" : x < width * 0.28 ? "start" : ev.anchor) : ev.anchor;
 
         g.append("text")
           .attr("class", "map-label")
-          .attr("x", x + ev.dx)
-          .attr("y", y + ev.dy)
-          .attr("text-anchor", ev.anchor)
-          .attr("font-size", ev.type === "home" ? 15.5 : 14)
+          .attr("x", clampLabelX(x + dx, 10))
+          .attr("y", y + dy)
+          .attr("text-anchor", anchor)
+          .attr("font-size", mob ? (ev.type === "home" ? 12 : 10.5) : ev.type === "home" ? 15.5 : 14)
           .attr("fill", color)
           .text(ev.name);
-        g.append("text")
-          .attr("class", "map-sublabel")
-          .attr("x", x + ev.dx)
-          .attr("y", y + ev.dy + 15)
-          .attr("text-anchor", ev.anchor)
-          .attr("font-size", 12)
-          .text(ev.tag);
+        if (!mob) {
+          g.append("text")
+            .attr("class", "map-sublabel")
+            .attr("x", x + dx)
+            .attr("y", y + dy + 15)
+            .attr("text-anchor", anchor)
+            .attr("font-size", 12)
+            .text(ev.tag);
+        }
       });
     }
   }
@@ -998,8 +1030,8 @@
   let elevBuilt = false;
 
   function elevBox() {
-    if (width <= 900) {
-      return { x: 24, y: 92, w: width - 48, h: Math.min(340, height * 0.44) };
+    if (isMobile()) {
+      return { x: 16, y: 68, w: width - 32, h: Math.min(290, height * 0.42) };
     }
     const left = Math.max(515, width * 0.4);
     const w = Math.min(750, width - left - 52);
@@ -1070,8 +1102,31 @@
                      L ${x0 + cw},${bankTopY} L ${x0 + cw},${y0 + ch} L ${x0},${y0 + ch} Z`;
     g.select(".elev-ground").attr("d", groundD);
 
-    g.select(".elev-title").attr("x", x0).attr("y", b.y + 18).text(isNow ? "Karun River cross-section: Now" : "Karun River cross-section: In the past");
-    g.select(".elev-subtitle").attr("x", x0).attr("y", b.y + 42).text(isNow ? "Lower water exposes mudbanks and brings sunken waste within reach" : "Deep flow kept boats and nets well above the riverbed");
+    const mob = isMobile();
+    g.select(".elev-title")
+      .attr("x", x0)
+      .attr("y", b.y + 16)
+      .text(
+        mob
+          ? isNow
+            ? "Karun River: Now"
+            : "Karun River: In the past"
+          : isNow
+            ? "Karun River cross-section: Now"
+            : "Karun River cross-section: In the past"
+      );
+    g.select(".elev-subtitle")
+      .attr("x", x0)
+      .attr("y", b.y + (mob ? 34 : 42))
+      .text(
+        mob
+          ? isNow
+            ? "Lower water puts sunken waste within reach"
+            : "Deep water kept boats & nets clear of bottom"
+          : isNow
+            ? "Lower water exposes mudbanks and brings sunken waste within reach"
+            : "Deep flow kept boats and nets well above the riverbed"
+      );
 
     g.select(".elev-water").transition().duration(dur).ease(d3.easeCubicInOut).attr("x", x0).attr("y", activeWaterY).attr("width", cw).attr("height", Math.max(0, bedY - activeWaterY + 4)).attr("fill", isNow ? "var(--river-deep)" : "var(--river)").attr("opacity", isNow ? 0.62 : 0.72);
     g.select(".elev-water-deep").transition().duration(dur).ease(d3.easeCubicInOut).attr("x", x0).attr("y", activeWaterY + (bedY - activeWaterY) * 0.55).attr("width", cw).attr("height", Math.max(0, (bedY - activeWaterY) * 0.48)).attr("fill", isNow ? "var(--river-dry)" : "var(--river-deep)");
@@ -1119,16 +1174,38 @@
     anno.selectAll("*").remove();
     if (!isNow) {
       anno.append("text").attr("class", "chart-anno").attr("x", x0 + cw * 0.16).attr("y", pastWaterY - 10).attr("fill", "var(--river)").text("High water level");
-      anno.append("text").attr("class", "chart-anno-sub").attr("x", boatX + 80).attr("y", netBottomY + 4).text("Net drifts clear of riverbed");
-      anno.append("text").attr("class", "chart-anno-sub").attr("x", x0 + cw * 0.5).attr("y", bedY + 22).attr("text-anchor", "middle").text("Deep channel floor");
+      anno
+        .append("text")
+        .attr("class", "chart-anno-sub")
+        .attr("x", mob ? x0 + cw * 0.86 : boatX + 80)
+        .attr("y", netBottomY + (mob ? 14 : 4))
+        .attr("text-anchor", mob ? "end" : "start")
+        .text(mob ? "Net drifts clear" : "Net drifts clear of riverbed");
+      anno.append("text").attr("class", "chart-anno-sub").attr("x", x0 + cw * 0.5).attr("y", bedY + 20).attr("text-anchor", "middle").text("Deep channel floor");
     } else {
       anno.append("text").attr("class", "chart-anno").attr("x", x0 + cw * 0.25).attr("y", nowWaterY - 10).attr("fill", "var(--alert)").text("Lower water today");
-      anno.append("text").attr("class", "chart-anno-sub").attr("x", x0 + cw * 0.11).attr("y", bankTopY + 38).attr("fill", "var(--river-dry)").text("Exposed mudbank");
-      anno.append("text").attr("class", "chart-anno").attr("x", snagX + 24).attr("y", snagY - 14).attr("fill", "var(--alert)").text("Net snags on waste & metal");
-      anno.append("text").attr("class", "chart-anno-sub").attr("x", snagX + 24).attr("y", snagY + 4).text("Shallow depth traps divers");
-      const dropX = x0 + cw * 0.81;
+      anno.append("text").attr("class", "chart-anno-sub").attr("x", x0 + cw * 0.08).attr("y", bankTopY + 34).attr("fill", "var(--river-dry)").text(mob ? "Dry bank" : "Exposed mudbank");
+      anno
+        .append("text")
+        .attr("class", "chart-anno")
+        .attr("x", mob ? x0 + cw * 0.94 : snagX + 24)
+        .attr("y", snagY - 14)
+        .attr("text-anchor", mob ? "end" : "start")
+        .attr("fill", "var(--alert)")
+        .text(mob ? "Net snags on waste" : "Net snags on waste & metal");
+      if (!mob) {
+        anno.append("text").attr("class", "chart-anno-sub").attr("x", snagX + 24).attr("y", snagY + 4).text("Shallow depth traps divers");
+      }
+      const dropX = x0 + cw * (mob ? 0.85 : 0.81);
       anno.append("line").attr("x1", dropX).attr("x2", dropX).attr("y1", pastWaterY + 4).attr("y2", nowWaterY - 4).attr("stroke", "var(--alert)").attr("stroke-width", 2.2);
-      anno.append("text").attr("class", "chart-anno").attr("x", dropX + 10).attr("y", (pastWaterY + nowWaterY) / 2 + 4).attr("fill", "var(--alert)").text("Drop in level");
+      anno
+        .append("text")
+        .attr("class", "chart-anno")
+        .attr("x", mob ? dropX - 8 : dropX + 10)
+        .attr("y", (pastWaterY + nowWaterY) / 2 + 4)
+        .attr("text-anchor", mob ? "end" : "start")
+        .attr("fill", "var(--alert)")
+        .text(mob ? "Drop" : "Drop in level");
     }
   }
 
@@ -1138,8 +1215,10 @@
   const chartSvg = d3.select("#chart-svg");
 
   function chartBox() {
-    if (width <= 900) {
-      return { x: 52, y: 120, w: width - 82, h: Math.min(300, height * 0.42) };
+    if (isMobile()) {
+      const left = isNarrowPhone() ? 42 : 48;
+      const right = isNarrowPhone() ? 22 : 30;
+      return { x: left, y: 112, w: width - left - right, h: Math.min(255, height * 0.36) };
     }
     const left = Math.max(525, width * 0.41);
     const w = Math.min(700, width - left - 78);
@@ -1181,21 +1260,39 @@
   }
 
   function renderKarunDischargeChart(g, b, highlightDrop, animate) {
+    const mob = isMobile();
     const data = DATA.karunDischarge;
     const x = d3.scaleLinear().domain([1960, 2024]).range([b.x, b.x + b.w]);
     const y = d3.scaleLinear().domain([0, 1250]).range([b.y + b.h, b.y]);
     const histMean = 700;
 
-    g.append("text").attr("class", "chart-title").attr("x", b.x).attr("y", b.y - 46).text(highlightDrop ? "Karun River flow dropped sharply after 2000" : "Karun River annual mean flow at Ahvaz");
-    g.append("text").attr("class", "chart-subtitle").attr("x", b.x).attr("y", b.y - 22).text("Cubic meters per second (m³/s) · zero-based scale");
+    g.append("text")
+      .attr("class", "chart-title")
+      .attr("x", b.x)
+      .attr("y", b.y - (mob ? 38 : 46))
+      .text(
+        mob
+          ? highlightDrop
+            ? "Karun flow fell after 2000"
+            : "Karun annual flow at Ahvaz"
+          : highlightDrop
+            ? "Karun River flow dropped sharply after 2000"
+            : "Karun River annual mean flow at Ahvaz"
+      );
+    g.append("text")
+      .attr("class", "chart-subtitle")
+      .attr("x", b.x)
+      .attr("y", b.y - (mob ? 18 : 22))
+      .text(mob ? "m³/s · zero-based scale" : "Cubic meters per second (m³/s) · zero-based scale");
 
-    const yTicks = [0, 250, 500, 750, 1000, 1250];
+    const yTicks = mob ? [0, 500, 1000] : [0, 250, 500, 750, 1000, 1250];
+    const xTicks = mob ? [1960, 1980, 2000, 2020] : [1960, 1970, 1980, 1990, 2000, 2010, 2020];
     g.append("g").attr("class", "chart-axis").selectAll("line").data(yTicks).join("line").attr("x1", b.x).attr("x2", b.x + b.w).attr("y1", (d) => y(d)).attr("y2", (d) => y(d)).attr("stroke", "var(--grid)");
-    g.append("g").attr("class", "chart-axis").attr("transform", `translate(${b.x},0)`).call(d3.axisLeft(y).tickValues(yTicks).tickSize(0).tickPadding(10)).call((ax) => ax.select(".domain").remove());
-    g.append("g").attr("class", "chart-axis").attr("transform", `translate(0,${b.y + b.h})`).call(d3.axisBottom(x).tickValues([1960, 1970, 1980, 1990, 2000, 2010, 2020]).tickFormat(d3.format("d")).tickSize(5)).call((ax) => ax.select(".domain").attr("stroke", "var(--border)"));
+    g.append("g").attr("class", "chart-axis").attr("transform", `translate(${b.x},0)`).call(d3.axisLeft(y).tickValues(yTicks).tickSize(0).tickPadding(8)).call((ax) => ax.select(".domain").remove());
+    g.append("g").attr("class", "chart-axis").attr("transform", `translate(0,${b.y + b.h})`).call(d3.axisBottom(x).tickValues(xTicks).tickFormat(d3.format("d")).tickSize(5)).call((ax) => ax.select(".domain").attr("stroke", "var(--border)"));
 
     g.append("line").attr("x1", b.x).attr("x2", b.x + b.w).attr("y1", y(histMean)).attr("y2", y(histMean)).attr("stroke", highlightDrop ? "var(--context)" : "var(--river)").attr("stroke-dasharray", "6 5").attr("stroke-width", 1.6);
-    g.append("text").attr("class", "chart-anno-sub").attr("x", b.x + 6).attr("y", y(histMean) - 8).attr("fill", highlightDrop ? "var(--ink-muted)" : "var(--river)").text("Historical average (~700 m³/s)");
+    g.append("text").attr("class", "chart-anno-sub").attr("x", b.x + 6).attr("y", y(histMean) - 8).attr("fill", highlightDrop ? "var(--ink-muted)" : "var(--river)").text(mob ? "Historical avg (~700)" : "Historical average (~700 m³/s)");
 
     const line = d3.line().x((d) => x(d.year)).y((d) => y(d.flow)).curve(d3.curveMonotoneX);
 
@@ -1207,7 +1304,7 @@
       }
       const peak = data.find((d) => d.year === 1969);
       g.append("circle").attr("cx", x(peak.year)).attr("cy", y(peak.flow)).attr("r", 5).attr("fill", "var(--river)");
-      g.append("text").attr("class", "chart-anno").attr("x", x(peak.year) + 10).attr("y", y(peak.flow) + 4).text("1969 peak: 1,139 m³/s");
+      g.append("text").attr("class", "chart-anno").attr("x", x(peak.year) + 8).attr("y", y(peak.flow) + 4).text(mob ? "1969: 1,139" : "1969 peak: 1,139 m³/s");
       const d77 = data.find((d) => d.year === 1977);
       g.append("circle").attr("cx", x(d77.year)).attr("cy", y(d77.flow)).attr("r", 4.5).attr("fill", "var(--ink-muted)");
       g.append("text").attr("class", "chart-anno-sub").attr("x", x(d77.year) + 8).attr("y", y(d77.flow) + 14).text("1977 drought");
@@ -1227,37 +1324,60 @@
       const d22 = data.find((d) => d.year === 2022);
       const d19 = data.find((d) => d.year === 2019);
       [d18, d22].forEach((pt) => g.append("circle").attr("cx", x(pt.year)).attr("cy", y(pt.flow)).attr("r", 5.5).attr("fill", "var(--alert)"));
-      g.append("text").attr("class", "chart-anno").attr("x", x(2004)).attr("y", y(545)).attr("fill", "var(--alert)").text("Upstream dams & transfers");
-      g.append("text").attr("class", "chart-anno-sub").attr("x", x(2004)).attr("y", y(545) + 17).text("Deficit below historical average");
-      g.append("text").attr("class", "chart-anno").attr("x", x(d22.year) - 8).attr("y", y(d22.flow) + 26).attr("text-anchor", "end").attr("fill", "var(--alert)").text("2021–23 lows (~210–235 m³/s)");
-      g.append("text").attr("class", "chart-anno-sub").attr("x", x(d19.year) - 8).attr("y", y(d19.flow) - 10).attr("text-anchor", "end").text("2019 spring flood");
+      if (!mob) {
+        g.append("text").attr("class", "chart-anno").attr("x", x(2004)).attr("y", y(545)).attr("fill", "var(--alert)").text("Upstream dams & transfers");
+        g.append("text").attr("class", "chart-anno-sub").attr("x", x(2004)).attr("y", y(545) + 17).text("Deficit below historical average");
+      }
+      g.append("text").attr("class", "chart-anno").attr("x", x(d22.year) - 4).attr("y", y(d22.flow) + 22).attr("text-anchor", "end").attr("fill", "var(--alert)").text(mob ? "2021–23 lows (~210)" : "2021–23 lows (~210–235 m³/s)");
+      g.append("text").attr("class", "chart-anno-sub").attr("x", x(d19.year) - 6).attr("y", y(d19.flow) - 10).attr("text-anchor", "end").text(mob ? "2019 flood" : "2019 spring flood");
     }
 
     attachChartHover(g, b, x, y, data, (d) => `${d.year}: ~${d.flow} m³/s`);
-    g.append("text").attr("class", "chart-source").attr("x", b.x).attr("y", b.y + b.h + 44).text("Benchmarks: Ahvaz Hydrometric Station (Encyclopaedia Iranica, Salarijazi et al. 2012, KWPA)");
+    g.append("text").attr("class", "chart-source").attr("x", b.x).attr("y", b.y + b.h + (mob ? 34 : 44)).text(mob ? "Ahvaz Station (Iranica, Salarijazi 2012)" : "Benchmarks: Ahvaz Hydrometric Station (Encyclopaedia Iranica, Salarijazi et al. 2012, KWPA)");
   }
 
   function renderIranFreshwaterChart(g, b, animate) {
+    const mob = isMobile();
     const allWB = DATA.worldBank.freshwaterPerCapita;
     const irn = allWB.filter((d) => d.iso === "IRN");
     const irq = allWB.filter((d) => d.iso === "IRQ");
     const syr = allWB.filter((d) => d.iso === "SYR");
 
-    const x = d3.scaleLinear().domain([1961, 2022]).range([b.x, b.x + b.w]);
+    const endPad = mob ? 68 : 0;
+    const x = d3.scaleLinear().domain([1961, 2022]).range([b.x, b.x + b.w - endPad]);
     const y = d3.scaleLinear().domain([0, 6200]).range([b.y + b.h, b.y]);
 
-    g.append("text").attr("class", "chart-title").attr("x", b.x).attr("y", b.y - 46).text(showRegionalCompare ? "Renewable freshwater per person: Iran, Iraq & Syria" : "Iran's renewable freshwater per person fell by 75%");
-    g.append("text").attr("class", "chart-subtitle").attr("x", b.x).attr("y", b.y - 22).text("Cubic meters per person per year (1961–2022) · World Bank / FAO AQUASTAT");
+    g.append("text")
+      .attr("class", "chart-title")
+      .attr("x", b.x)
+      .attr("y", b.y - (mob ? 38 : 46))
+      .text(
+        mob
+          ? showRegionalCompare
+            ? "Freshwater / person: Iran, Iraq, Syria"
+            : "Iran's freshwater / person fell 75%"
+          : showRegionalCompare
+            ? "Renewable freshwater per person: Iran, Iraq & Syria"
+            : "Iran's renewable freshwater per person fell by 75%"
+      );
+    g.append("text")
+      .attr("class", "chart-subtitle")
+      .attr("x", b.x)
+      .attr("y", b.y - (mob ? 18 : 22))
+      .text(mob ? "m³ / person / year · World Bank / FAO" : "Cubic meters per person per year (1961–2022) · World Bank / FAO AQUASTAT");
 
-    const yTicks = [0, 1000, 2000, 3000, 4000, 5000, 6000];
-    g.append("g").attr("class", "chart-axis").selectAll("line").data(yTicks).join("line").attr("x1", b.x).attr("x2", b.x + b.w).attr("y1", (d) => y(d)).attr("y2", (d) => y(d)).attr("stroke", "var(--grid)");
-    g.append("g").attr("class", "chart-axis").attr("transform", `translate(${b.x},0)`).call(d3.axisLeft(y).tickValues(yTicks).tickFormat(d3.format(",d")).tickSize(0).tickPadding(10)).call((ax) => ax.select(".domain").remove());
-    g.append("g").attr("class", "chart-axis").attr("transform", `translate(0,${b.y + b.h})`).call(d3.axisBottom(x).tickValues([1965, 1975, 1985, 1995, 2005, 2015, 2022]).tickFormat(d3.format("d")).tickSize(5)).call((ax) => ax.select(".domain").attr("stroke", "var(--border)"));
+    const yTicks = mob ? [0, 2000, 4000, 6000] : [0, 1000, 2000, 3000, 4000, 5000, 6000];
+    const xTicks = mob ? [1965, 1985, 2005, 2022] : [1965, 1975, 1985, 1995, 2005, 2015, 2022];
+    g.append("g").attr("class", "chart-axis").selectAll("line").data(yTicks).join("line").attr("x1", b.x).attr("x2", b.x + b.w - endPad).attr("y1", (d) => y(d)).attr("y2", (d) => y(d)).attr("stroke", "var(--grid)");
+    g.append("g").attr("class", "chart-axis").attr("transform", `translate(${b.x},0)`).call(d3.axisLeft(y).tickValues(yTicks).tickFormat((d) => (mob && d >= 1000 ? `${d / 1000}k` : d3.format(",d")(d))).tickSize(0).tickPadding(8)).call((ax) => ax.select(".domain").remove());
+    g.append("g").attr("class", "chart-axis").attr("transform", `translate(0,${b.y + b.h})`).call(d3.axisBottom(x).tickValues(xTicks).tickFormat(d3.format("d")).tickSize(5)).call((ax) => ax.select(".domain").attr("stroke", "var(--border)"));
 
-    g.append("line").attr("x1", b.x).attr("x2", b.x + b.w).attr("y1", y(1700)).attr("y2", y(1700)).attr("stroke", "var(--alert)").attr("stroke-dasharray", "6 5").attr("stroke-width", 1.6);
-    g.append("text").attr("class", "chart-anno-sub").attr("x", b.x + 6).attr("y", y(1700) - 7).attr("fill", "var(--alert)").text("1,700 m³ — Water stress line");
-    g.append("line").attr("x1", b.x).attr("x2", b.x + b.w).attr("y1", y(1000)).attr("y2", y(1000)).attr("stroke", "var(--alert)").attr("stroke-dasharray", "2 4").attr("stroke-width", 1.2).attr("opacity", 0.7);
-    g.append("text").attr("class", "chart-anno-sub").attr("x", b.x + 6).attr("y", y(1000) - 6).attr("fill", "var(--ink-muted)").text("1,000 m³ — Scarcity");
+    g.append("line").attr("x1", b.x).attr("x2", b.x + b.w - endPad).attr("y1", y(1700)).attr("y2", y(1700)).attr("stroke", "var(--alert)").attr("stroke-dasharray", "6 5").attr("stroke-width", 1.6);
+    g.append("text").attr("class", "chart-anno-sub").attr("x", b.x + 6).attr("y", y(1700) - 6).attr("fill", "var(--alert)").text(mob ? "1,700 m³ stress" : "1,700 m³ — Water stress line");
+    g.append("line").attr("x1", b.x).attr("x2", b.x + b.w - endPad).attr("y1", y(1000)).attr("y2", y(1000)).attr("stroke", "var(--alert)").attr("stroke-dasharray", "2 4").attr("stroke-width", 1.2).attr("opacity", 0.7);
+    if (!mob) {
+      g.append("text").attr("class", "chart-anno-sub").attr("x", b.x + 6).attr("y", y(1000) - 6).attr("fill", "var(--ink-muted)").text("1,000 m³ — Scarcity");
+    }
 
     const line = d3.line().x((d) => x(d.year)).y((d) => y(d.value)).curve(d3.curveMonotoneX);
     const endLabels = [];
@@ -1266,8 +1386,8 @@
       g.append("path").datum(syr).attr("d", line).attr("fill", "none").attr("stroke", "var(--alert)").attr("stroke-width", 2.8);
       const irqLast = irq[irq.length - 1];
       const syrLast = syr[syr.length - 1];
-      endLabels.push({ y: y(irqLast.value), text: `Iraq (${Math.round(irqLast.value)} m³)`, color: "var(--ink-muted)" });
-      endLabels.push({ y: y(syrLast.value), text: `Syria (${Math.round(syrLast.value)} m³)`, color: "var(--alert)" });
+      endLabels.push({ y: y(irqLast.value), text: mob ? `Iraq ${Math.round(irqLast.value)}` : `Iraq (${Math.round(irqLast.value)} m³)`, color: "var(--ink-muted)" });
+      endLabels.push({ y: y(syrLast.value), text: mob ? `Syria ${Math.round(syrLast.value)}` : `Syria (${Math.round(syrLast.value)} m³)`, color: "var(--alert)" });
     }
 
     const irnPath = g.append("path").datum(irn).attr("d", line).attr("fill", "none").attr("stroke", showRegionalCompare ? "var(--river)" : "var(--alert)").attr("stroke-width", 3.6);
@@ -1280,36 +1400,46 @@
     const last = irn[irn.length - 1];
     g.append("circle").attr("cx", x(first.year)).attr("cy", y(first.value)).attr("r", 4.5).attr("fill", showRegionalCompare ? "var(--river)" : "var(--alert)");
     g.append("circle").attr("cx", x(last.year)).attr("cy", y(last.value)).attr("r", 5.5).attr("fill", showRegionalCompare ? "var(--river)" : "var(--alert)");
-    g.append("text").attr("class", "chart-anno").attr("x", x(first.year) + 10).attr("y", y(first.value) + 4).text(`Iran 1961: ${Math.round(first.value).toLocaleString()} m³`);
+    g.append("text").attr("class", "chart-anno").attr("x", x(first.year) + 8).attr("y", y(first.value) + 4).text(mob ? `1961: ${Math.round(first.value).toLocaleString()}` : `Iran 1961: ${Math.round(first.value).toLocaleString()} m³`);
 
-    endLabels.push({ y: y(last.value), text: `Iran (${Math.round(last.value).toLocaleString()} m³)`, color: showRegionalCompare ? "var(--river)" : "var(--alert)" });
-    spreadLabels(endLabels, 19);
-    endLabels.forEach((lb) => g.append("text").attr("class", "chart-anno").attr("x", x(2022) + 8).attr("y", lb.y + 4).attr("fill", lb.color).attr("font-size", 13).text(lb.text));
+    endLabels.push({ y: y(last.value), text: mob ? `Iran ${Math.round(last.value).toLocaleString()}` : `Iran (${Math.round(last.value).toLocaleString()} m³)`, color: showRegionalCompare ? "var(--river)" : "var(--alert)" });
+    spreadLabels(endLabels, mob ? 15 : 19);
+    endLabels.forEach((lb) => g.append("text").attr("class", "chart-anno").attr("x", x(2022) + 6).attr("y", lb.y + 4).attr("fill", lb.color).attr("font-size", mob ? 11 : 13).text(lb.text));
 
     const cross = irn.find((d) => d.value < 1700);
-    if (cross && !showRegionalCompare) {
+    if (cross && !showRegionalCompare && !mob) {
       g.append("circle").attr("cx", x(cross.year)).attr("cy", y(cross.value)).attr("r", 5.5).attr("fill", "var(--alert)");
       g.append("text").attr("class", "chart-anno").attr("x", x(cross.year) - 6).attr("y", y(cross.value) - 22).attr("text-anchor", "end").attr("fill", "var(--alert)").text(`Crossed into water stress (${cross.year})`);
     }
 
-    attachChartHover(g, b, x, y, irn.map((d) => ({ year: d.year, flow: d.value })), (d) => `Iran ${d.year}: ${Math.round(d.flow).toLocaleString()} m³ / person`);
-    g.append("text").attr("class", "chart-source").attr("x", b.x).attr("y", b.y + b.h + 44).text("Data: World Bank WDI / FAO AQUASTAT (ER.H2O.INTR.PC, 1961–2022)");
+    attachChartHover(g, { ...b, w: b.w - endPad }, x, y, irn.map((d) => ({ year: d.year, flow: d.value })), (d) => `Iran ${d.year}: ${Math.round(d.flow).toLocaleString()} m³`);
+    g.append("text").attr("class", "chart-source").attr("x", b.x).attr("y", b.y + b.h + (mob ? 34 : 44)).text(mob ? "World Bank / FAO AQUASTAT (1961–2022)" : "Data: World Bank WDI / FAO AQUASTAT (ER.H2O.INTR.PC, 1961–2022)");
   }
 
-  // NEW: British Columbia Atmospheric River Rainfall vs Historical Normal (zero-based, direct labels, NO legend)
+  // British Columbia Atmospheric River Rainfall vs Historical Normal
   function renderBcRainChart(g, b, animate) {
+    const mob = isMobile();
     const data = DATA.bcRain;
-    const padLeft = 100;
-    const x0 = b.x + padLeft;
-    const plotW = b.w - padLeft - 44;
+    const padLeft = mob ? 68 : 100;
+    const padRight = mob ? 66 : 44;
+    const x0 = b.x + (mob ? padLeft - 30 : padLeft);
+    const plotW = Math.max(120, b.w - (mob ? padLeft - 30 : padLeft) - padRight);
 
     const x = d3.scaleLinear().domain([0, 820]).range([x0, x0 + plotW]);
-    const y = d3.scaleBand().domain(data.map((d) => d.city)).range([b.y + 10, b.y + b.h - 10]).padding(0.32);
+    const y = d3.scaleBand().domain(data.map((d) => d.city)).range([b.y + 6, b.y + b.h - 6]).padding(0.32);
 
-    g.append("text").attr("class", "chart-title").attr("x", b.x).attr("y", b.y - 46).text("British Columbia rainfall: Nov 2021 vs. normal");
-    g.append("text").attr("class", "chart-subtitle").attr("x", b.x).attr("y", b.y - 22).text("Total monthly precipitation in millimeters (mm) · Environment Canada (ECCC)");
+    g.append("text")
+      .attr("class", "chart-title")
+      .attr("x", mob ? 16 : b.x)
+      .attr("y", b.y - (mob ? 38 : 46))
+      .text(mob ? "BC rain: Nov 2021 vs. normal" : "British Columbia rainfall: Nov 2021 vs. normal");
+    g.append("text")
+      .attr("class", "chart-subtitle")
+      .attr("x", mob ? 16 : b.x)
+      .attr("y", b.y - (mob ? 18 : 22))
+      .text(mob ? "Monthly precipitation (mm) · ECCC" : "Total monthly precipitation in millimeters (mm) · Environment Canada (ECCC)");
 
-    const xTicks = [0, 200, 400, 600, 800];
+    const xTicks = mob ? [0, 400, 800] : [0, 200, 400, 600, 800];
     g.append("g").attr("class", "chart-axis").selectAll("line").data(xTicks).join("line").attr("x1", (d) => x(d)).attr("x2", (d) => x(d)).attr("y1", b.y).attr("y2", b.y + b.h).attr("stroke", "var(--grid)");
     g.append("g").attr("class", "chart-axis").attr("transform", `translate(0,${b.y + b.h})`).call(d3.axisBottom(x).tickValues(xTicks).tickFormat((d) => `${d} mm`).tickSize(5)).call((ax) => ax.select(".domain").attr("stroke", "var(--border)"));
 
@@ -1319,52 +1449,49 @@
       const cy = y(d.city);
       const mult = (d.nov2021 / d.normal).toFixed(1);
 
-      // City label on left
-      g.append("text").attr("class", "chart-anno").attr("x", x0 - 12).attr("y", cy + y.bandwidth() / 2 + 5).attr("text-anchor", "end").text(d.city);
+      g.append("text").attr("class", "chart-anno").attr("x", x0 - 8).attr("y", cy + y.bandwidth() / 2 + 4).attr("text-anchor", "end").text(d.city);
 
-      // Historical normal bar (muted gray context)
       const normBar = g
         .append("rect")
         .attr("x", x(0))
         .attr("y", cy + barH + 2)
-        .attr("height", barH - 2)
+        .attr("height", Math.max(4, barH - 2))
         .attr("rx", 2)
         .attr("fill", "var(--context)")
         .attr("opacity", 0.72)
         .attr("width", animate ? 0 : x(d.normal) - x(0));
       if (animate) normBar.transition().duration(650).delay(idx * 55).attr("width", x(d.normal) - x(0));
 
-      // Nov 2021 atmospheric river bar (bright water blue highlight)
       const wetBar = g
         .append("rect")
         .attr("x", x(0))
         .attr("y", cy)
-        .attr("height", barH)
+        .attr("height", Math.max(5, barH))
         .attr("rx", 2)
         .attr("fill", "var(--transfer)")
         .attr("width", animate ? 0 : x(d.nov2021) - x(0));
       if (animate) wetBar.transition().duration(750).delay(idx * 55 + 90).ease(d3.easeCubicOut).attr("width", x(d.nov2021) - x(0));
 
-      // Direct labels (no legend!)
       g.append("text")
         .attr("class", "chart-anno")
-        .attr("x", x(d.nov2021) + 8)
-        .attr("y", cy + barH * 0.78)
+        .attr("x", x(d.nov2021) + 6)
+        .attr("y", cy + barH * 0.8)
         .attr("fill", "var(--transfer)")
-        .attr("font-size", 13.5)
-        .text(`${d.nov2021} mm (${mult}×)`);
+        .attr("font-size", mob ? 11 : 13.5)
+        .text(mob ? `${d.nov2021} (${mult}×)` : `${d.nov2021} mm (${mult}×)`);
 
       g.append("text")
         .attr("class", "chart-anno-sub")
-        .attr("x", x(d.normal) + 8)
-        .attr("y", cy + barH * 1.75)
-        .attr("font-size", 12)
-        .text(idx === 0 ? `${d.normal} mm normal` : `${d.normal} mm`);
+        .attr("x", x(d.normal) + 6)
+        .attr("y", cy + barH * 1.78)
+        .attr("font-size", mob ? 10 : 12)
+        .text(idx === 0 ? `${d.normal} normal` : `${d.normal}`);
     });
 
-    // Direct callout on first row instead of legend
-    g.append("text").attr("class", "chart-anno-sub").attr("x", x(730) + 8).attr("y", y("Hope") - 6).attr("fill", "var(--transfer)").text("Nov 2021 storm");
-    g.append("text").attr("class", "chart-source").attr("x", b.x).attr("y", b.y + b.h + 44).text("Data: Environment and Climate Change Canada (Nov 2021 atmospheric river vs. historical normal)");
+    if (!mob) {
+      g.append("text").attr("class", "chart-anno-sub").attr("x", x(730) + 8).attr("y", y("Hope") - 6).attr("fill", "var(--transfer)").text("Nov 2021 storm");
+    }
+    g.append("text").attr("class", "chart-source").attr("x", mob ? 16 : b.x).attr("y", b.y + b.h + (mob ? 34 : 44)).text(mob ? "Data: Environment Canada (Nov 2021 vs. normal)" : "Data: Environment and Climate Change Canada (Nov 2021 atmospheric river vs. historical normal)");
   }
 
   // British Columbia Annual Wildfires (2014–2024): Fire-Icon Unit Grid / Dot Plot
@@ -1379,6 +1506,7 @@
   function renderBcWildfiresChart(g, b, animate) {
     clearWildfireTimers();
 
+    const mob = isMobile();
     const data = DATA.bcWildfires;
     const isHa = bcWildfireMetric === "hectares";
     const unitSize = isHa ? 100000 : 100;
@@ -1389,33 +1517,45 @@
     const FLAME_INNER =
       "M 0,-2.2 C 1.4,-0.2 3.1,1.3 3.1,3.9 C 3.1,6.1 1.7,7.5 0,7.5 C -1.7,7.5 -3.1,6.1 -3.1,3.9 C -3.1,1.6 -1.4,-0.1 0,-2.2 Z";
 
-    const x = d3.scaleBand().domain(data.map((d) => d.year)).range([b.x, b.x + b.w]).padding(0.18);
+    const x = d3.scaleBand().domain(data.map((d) => d.year)).range([b.x, b.x + b.w]).padding(mob ? 0.14 : 0.18);
     const colsPerYear = 2;
-    const iconStepX = Math.min(20, Math.max(13, (x.bandwidth() - 4) / colsPerYear));
+    const iconStepX = Math.min(20, Math.max(mob ? 8.5 : 13, (x.bandwidth() - 2) / colsPerYear));
     const maxIcons = d3.max(data, (d) => Math.max(1, Math.round((isHa ? d.hectares : d.fires) / unitSize)));
     const maxRows = Math.ceil(maxIcons / colsPerYear);
-    const iconStepY = Math.min(24, Math.max(15, (b.h - 42) / maxRows));
-    const iconScale = Math.min(1.05, Math.max(0.68, Math.min(iconStepX / 17, iconStepY / 21)));
+    const iconStepY = Math.min(24, Math.max(mob ? 11 : 15, (b.h - (mob ? 28 : 42)) / maxRows));
+    const iconScale = Math.min(1.05, Math.max(mob ? 0.48 : 0.68, Math.min(iconStepX / 17, iconStepY / 21)));
 
     // Title & direct unit key (NO legend box!)
     g.append("text")
       .attr("class", "chart-title")
       .attr("x", b.x)
-      .attr("y", b.y - 48)
-      .text(isHa ? "Area burned by wildfires in British Columbia" : "Wildfires in British Columbia (2014–2024)");
+      .attr("y", b.y - (mob ? 38 : 48))
+      .text(
+        mob
+          ? isHa
+            ? "BC wildfire area burned"
+            : "BC wildfires (2014–2024)"
+          : isHa
+            ? "Area burned by wildfires in British Columbia"
+            : "Wildfires in British Columbia (2014–2024)"
+      );
 
     // Inline flame icon directly in the subtitle line
-    const subG = g.append("g").attr("transform", `translate(${b.x + 7},${b.y - 24})`);
-    subG.append("path").attr("d", FLAME_OUTER).attr("transform", "scale(0.78)").attr("fill", "var(--alert)");
-    subG.append("path").attr("d", FLAME_INNER).attr("transform", "scale(0.78)").attr("fill", "var(--boat)");
+    const subG = g.append("g").attr("transform", `translate(${b.x + 6},${b.y - (mob ? 20 : 24)})`);
+    subG.append("path").attr("d", FLAME_OUTER).attr("transform", mob ? "scale(0.64)" : "scale(0.78)").attr("fill", "var(--alert)");
+    subG.append("path").attr("d", FLAME_INNER).attr("transform", mob ? "scale(0.64)" : "scale(0.78)").attr("fill", "var(--boat)");
     g.append("text")
       .attr("class", "chart-subtitle")
-      .attr("x", b.x + 19)
-      .attr("y", b.y - 19)
+      .attr("x", b.x + (mob ? 16 : 19))
+      .attr("y", b.y - (mob ? 16 : 19))
       .text(
-        isHa
-          ? "= 100,000 hectares burned · each year builds one by one (2014 → 2024)"
-          : "= 100 wildfires · each year builds one by one (2014 → 2024)"
+        mob
+          ? isHa
+            ? "= 100k ha burned (year by year)"
+            : "= 100 wildfires (year by year)"
+          : isHa
+            ? "= 100,000 hectares burned · each year builds one by one (2014 → 2024)"
+            : "= 100 wildfires · each year builds one by one (2014 → 2024)"
       );
 
     // Subtle baseline & faint reference guide lines
@@ -1429,11 +1569,11 @@
       .attr("stroke-width", 1.4);
 
     // Subtle unit guide lines (e.g., 1,000 / 2,000 fires or 1M / 2M ha)
-    const refMarks = isHa ? [10, 20] : [10, 20]; // icon counts (10 icons = 1,000 fires or 1M ha)
+    const refMarks = [10, 20];
     refMarks.forEach((cnt) => {
       const rowIdx = cnt / colsPerYear;
       const ry = baseY - rowIdx * iconStepY - 4;
-      if (ry > b.y + 10) {
+      if (ry > b.y + 8) {
         g.append("line")
           .attr("x1", b.x)
           .attr("x2", b.x + b.w)
@@ -1443,11 +1583,11 @@
           .attr("stroke-dasharray", "4 4");
         g.append("text")
           .attr("class", "chart-anno-sub")
-          .attr("x", b.x - 8)
+          .attr("x", b.x - 6)
           .attr("y", ry + 4)
           .attr("text-anchor", "end")
-          .attr("font-size", 11.5)
-          .text(isHa ? `${cnt / 10}M ha` : `${(cnt * 100).toLocaleString()}`);
+          .attr("font-size", mob ? 9.5 : 11.5)
+          .text(isHa ? `${cnt / 10}M` : mob ? `${cnt / 10}k` : `${(cnt * 100).toLocaleString()}`);
       }
     });
 
@@ -1458,7 +1598,7 @@
       .attr("x", b.x + b.w)
       .attr("y", b.y + 12)
       .attr("text-anchor", "end")
-      .attr("font-size", 16)
+      .attr("font-size", mob ? 13.5 : 16)
       .attr("fill", "var(--alert)")
       .text("");
 
@@ -1467,17 +1607,16 @@
       const cx = x(d.year) + x.bandwidth() / 2;
       const colG = g.append("g").attr("class", `wf-col-${d.year}`);
 
-      // X-axis year label (faint until year activates)
       const yrText = colG
         .append("text")
         .attr("x", cx)
-        .attr("y", baseY + 20)
+        .attr("y", baseY + (mob ? 15 : 20))
         .attr("text-anchor", "middle")
-        .attr("font-size", 13)
+        .attr("font-size", mob ? 10 : 13)
         .attr("font-weight", d.record ? 700 : 500)
         .attr("fill", d.record ? "var(--alert)" : "var(--ink-muted)")
         .attr("opacity", animate ? 0.25 : 1)
-        .text(d.year);
+        .text(mob ? `'${String(d.year).slice(2)}` : d.year);
 
       return { d, cx, colG, yrText };
     });
@@ -1490,18 +1629,18 @@
     calloutG
       .append("text")
       .attr("class", "chart-anno")
-      .attr("x", x(2023) - 16)
-      .attr("y", Math.max(b.y + 18, r23TopY + 12))
-      .attr("text-anchor", "end")
+      .attr("x", mob ? b.x + 6 : x(2023) - 16)
+      .attr("y", mob ? b.y + 12 : Math.max(b.y + 18, r23TopY + 12))
+      .attr("text-anchor", mob ? "start" : "end")
       .attr("fill", "var(--alert)")
       .text("2023 record season");
     calloutG
       .append("text")
       .attr("class", "chart-anno-sub")
-      .attr("x", x(2023) - 16)
-      .attr("y", Math.max(b.y + 35, r23TopY + 29))
-      .attr("text-anchor", "end")
-      .text("2,293 fires · 2.84M ha burned");
+      .attr("x", mob ? b.x + 6 : x(2023) - 16)
+      .attr("y", mob ? b.y + 26 : Math.max(b.y + 35, r23TopY + 29))
+      .attr("text-anchor", mob ? "start" : "end")
+      .text("2,293 fires · 2.84M ha");
 
     function drawYearColumn(entry, immediate) {
       const { d, cx, colG, yrText } = entry;
@@ -1531,27 +1670,31 @@
         }
       }
 
-      // Direct numeric count right on top of each year's fire grid
-      const topY = baseY - Math.ceil(count / colsPerYear) * iconStepY - 8;
-      const labelTxt = isHa
-        ? val >= 1000000
-          ? `${(val / 1000000).toFixed(2)}M`
-          : `${Math.round(val / 1000)}k`
-        : val.toLocaleString();
+      // Direct numeric count right on top of each year's fire grid (hide minor counts on narrow phones to prevent collisions)
+      if (!mob || d.major || d.year === 2015 || d.year === 2020) {
+        const topY = baseY - Math.ceil(count / colsPerYear) * iconStepY - 6;
+        const labelTxt = isHa
+          ? val >= 1000000
+            ? `${(val / 1000000).toFixed(1)}M`
+            : `${Math.round(val / 1000)}k`
+          : mob
+            ? `${(val / 1000).toFixed(1)}k`
+            : val.toLocaleString();
 
-      const lbl = colG
-        .append("text")
-        .attr("class", "chart-anno")
-        .attr("x", cx)
-        .attr("y", topY)
-        .attr("text-anchor", "middle")
-        .attr("font-size", d.record ? 13.5 : 11.5)
-        .attr("fill", d.record ? "var(--alert)" : d.major ? "var(--ink)" : "var(--ink-muted)")
-        .attr("opacity", immediate ? 1 : 0)
-        .text(labelTxt);
+        const lbl = colG
+          .append("text")
+          .attr("class", "chart-anno")
+          .attr("x", cx)
+          .attr("y", topY)
+          .attr("text-anchor", "middle")
+          .attr("font-size", mob ? (d.record ? 10.5 : 9) : d.record ? 13.5 : 11.5)
+          .attr("fill", d.record ? "var(--alert)" : d.major ? "var(--ink)" : "var(--ink-muted)")
+          .attr("opacity", immediate ? 1 : 0)
+          .text(labelTxt);
 
-      if (!immediate) {
-        lbl.transition().duration(220).delay(Math.ceil(count / colsPerYear) * 26).attr("opacity", 1);
+        if (!immediate) {
+          lbl.transition().duration(220).delay(Math.ceil(count / colsPerYear) * 26).attr("opacity", 1);
+        }
       }
 
       if (d.year === 2023 && !immediate) {
@@ -1562,7 +1705,6 @@
     if (!animate) {
       colGroups.forEach((entry) => drawYearColumn(entry, true));
     } else {
-      // Reveal each year one by one (2014 -> 2024)
       const stepMs = 340;
       colGroups.forEach((entry, idx) => {
         const tid = setTimeout(() => {
@@ -1580,8 +1722,8 @@
     g.append("text")
       .attr("class", "chart-source")
       .attr("x", b.x)
-      .attr("y", b.y + b.h + 44)
-      .text("Data: BC Wildfire Service, Government of British Columbia (2014–2024)");
+      .attr("y", b.y + b.h + (mob ? 34 : 44))
+      .text(mob ? "Data: BC Wildfire Service (2014–2024)" : "Data: BC Wildfire Service, Government of British Columbia (2014–2024)");
   }
 
   function attachChartHover(g, b, x, y, series, formatter) {
@@ -2303,8 +2445,13 @@
 
     function goToIndex(idx) {
       const clamped = Math.max(0, Math.min(STEPS.length - 1, idx));
-      stepEls[clamped].scrollIntoView({ behavior: "smooth", block: "center" });
+      stepEls[clamped].scrollIntoView({ behavior: "smooth", block: isMobile() ? "start" : "center" });
     }
+
+    const prevBtn = document.getElementById("btn-prev-step");
+    const nextBtn = document.getElementById("btn-next-step");
+    if (prevBtn) prevBtn.addEventListener("click", () => goToIndex(currentStepIndex - 1));
+    if (nextBtn) nextBtn.addEventListener("click", () => goToIndex(currentStepIndex + 1));
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && lightbox.classList.contains("is-open")) {
@@ -2385,4 +2532,15 @@
   setupPhotos();
   applyStep(STEPS[0].id, 0);
   requestAnimationFrame(animateBoatLoop);
+
+  // With scroll-snap on, the browser can settle on the footer before the steps
+  // exist. Start at the first step instead (and ignore a restored scroll).
+  try { history.scrollRestoration = "manual"; } catch (e) {}
+  const root = document.documentElement;
+  root.style.scrollSnapType = "none";
+  window.scrollTo(0, 0);
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    window.scrollTo(0, 0);
+    root.style.scrollSnapType = "";
+  }));
 })();

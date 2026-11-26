@@ -131,6 +131,36 @@ a {
   font-weight: 600;
 }
 
+.hud-nav {
+  pointer-events: auto;
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-nav-btn {
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hud-nav-btn:active {
+  transform: scale(0.93);
+  border-color: var(--river);
+}
+
 /* ==========================================================================
    SCROLLYTELLING SHELL
    ========================================================================== */
@@ -140,12 +170,13 @@ a {
   width: 100%;
 }
 
-/* Sticky full-viewport visual stage */
+/* Sticky full-viewport visual stage (svh avoids mobile address-bar jitter) */
 .stage-wrap {
   position: sticky;
   top: 0;
   width: 100%;
   height: 100vh;
+  height: 100svh;
   overflow: hidden;
   background: var(--bg);
 }
@@ -426,11 +457,13 @@ a {
   position: relative;
   z-index: 20;
   margin-top: -100vh;
+  margin-top: -100svh;
   pointer-events: none;
 }
 
 .step {
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   padding: 24px 0 24px 4.2vw;
@@ -440,6 +473,7 @@ a {
 
 .step:first-child {
   min-height: 100vh;
+  min-height: 100svh;
   align-items: flex-end;
   padding-bottom: 11vh;
   scroll-snap-align: start;
@@ -447,6 +481,7 @@ a {
 
 .step:last-child {
   min-height: 100vh;
+  min-height: 100svh;
 }
 
 .step-card {
@@ -819,29 +854,171 @@ a {
 }
 
 @media (max-width: 900px) {
-  .step {
-    padding: 20px 16px;
+  .top-hud {
+    top: max(10px, env(safe-area-inset-top));
+    left: 12px;
+    right: 12px;
+  }
+  .hud-pill {
+    padding: 5px 11px;
+    font-size: 12px;
+  }
+  .hud-nav {
+    display: inline-flex;
+  }
+  .step,
+  .step:first-child {
+    padding: 16px 12px max(18px, env(safe-area-inset-bottom));
     align-items: flex-end;
-    padding-bottom: 6vh;
+    scroll-snap-align: start;
+  }
+  .step-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: rgba(20, 22, 25, 0.84);
   }
   .step-body {
-    font-size: 19px;
+    font-size: 17.5px;
+    line-height: 1.48;
+  }
+  .step-body + .step-body {
+    margin-top: 9px;
+  }
+  .step-note {
+    margin-top: 9px;
+    font-size: 12.5px;
+  }
+  .step-sources {
+    margin-top: 9px;
+    font-size: 11.5px;
+  }
+  .inline-controls {
+    margin-top: 10px;
+    gap: 6px;
+  }
+  .chip-btn {
+    padding: 8px 12px;
+    font-size: 12.5px;
+    min-height: 36px;
   }
   .photo-spotlight,
   .photo-spotlight.is-anchored,
   .video-spotlight {
-    right: 16px !important;
-    left: 16px !important;
-    top: 66px !important;
+    right: 12px !important;
+    left: 12px !important;
+    top: calc(max(10px, env(safe-area-inset-top)) + 44px) !important;
     width: auto;
+    max-width: 520px;
+    margin: 0 auto;
     transform: none !important;
   }
   .photo-spotlight img,
-  .photo-spotlight.is-portrait img,
+  .photo-spotlight.is-portrait img {
+    height: min(210px, 28svh);
+  }
   .photo-spotlight.no-caption img {
-    height: 190px;
+    height: min(295px, 40svh);
+  }
+  .photo-spotlight .photo-caption {
+    padding: 9px 12px;
+  }
+  .photo-spotlight .photo-title {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .photo-spotlight .photo-meta {
+    font-size: 11px;
+  }
+  .video-frame.ratio-4-3 {
+    aspect-ratio: auto;
+    height: min(200px, 27svh);
+  }
+  .video-frame.ratio-square {
+    aspect-ratio: auto;
+    height: min(225px, 31svh);
+  }
+  .video-caption {
+    padding: 10px 12px 12px;
+  }
+  .video-title {
+    font-size: 13.5px;
+  }
+  .video-meta {
+    font-size: 11.5px;
+  }
+  .video-controls {
+    margin-top: 8px;
+    gap: 6px;
+  }
+  .video-btn {
+    padding: 8px 11px;
+    font-size: 12px;
+    min-height: 35px;
+  }
+  .chart-title {
+    font-size: 17px;
+  }
+  .chart-subtitle {
+    font-size: 11.5px;
+  }
+  .chart-anno {
+    font-size: 11.5px;
+  }
+  .chart-anno-sub {
+    font-size: 10.5px;
+  }
+  .chart-axis text {
+    font-size: 10.5px;
+  }
+  .chart-source {
+    font-size: 10px;
+  }
+  .map-label {
+    font-size: 13.5px;
+    stroke-width: 4px;
+  }
+  .map-sublabel {
+    font-size: 11px;
+    stroke-width: 3.5px;
   }
   .step-dots {
     display: none;
+  }
+  .lightbox {
+    padding: 12px;
+  }
+  .lightbox-bar {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+  .lightbox-close {
+    align-self: flex-end;
+    padding: 8px 14px;
+  }
+  .story-footer {
+    padding: 36px 18px calc(48px + env(safe-area-inset-bottom));
+  }
+  .footer-inner h2 {
+    font-size: 20px;
+  }
+  .footer-inner p,
+  .footer-inner li {
+    font-size: 13.5px;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 420px) {
+  .step-body {
+    font-size: 16.5px;
+  }
+  .step-card {
+    padding: 14px 15px;
+  }
+  .chart-title {
+    font-size: 15.5px;
   }
 }
