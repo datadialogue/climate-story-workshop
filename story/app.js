@@ -203,13 +203,16 @@
 
   function stageFocusCenter() {
     if (isMobile()) {
-      const hasTopMedia =
-        photoSpotlight.classList.contains("is-visible") ||
-        videoSpotlight.classList.contains("is-visible");
+      const hasPhoto = photoSpotlight.classList.contains("is-visible");
+      const hasVideo = videoSpotlight.classList.contains("is-visible");
       if (currentStepId === "closing-world") {
         return [width * 0.5, height * 0.34];
       }
-      return [width * 0.5, hasTopMedia ? height * 0.54 : height * 0.38];
+      // Shift map focus cleanly left of the compact top-right photo/video card so both stay clearly visible
+      if (hasPhoto || hasVideo) {
+        return [width * 0.31, height * 0.39];
+      }
+      return [width * 0.5, height * 0.38];
     }
     if (currentStepId === "closing-world") {
       return [width * 0.56, height * 0.52];
@@ -739,12 +742,39 @@
     const gLeader = screenSpace.select(".ss-leader");
     gLeader.selectAll("*").remove();
 
-    if (!activeSpotlightAnchor || !photoSpotlight.classList.contains("is-visible") || width <= 900) {
+    if (!activeSpotlightAnchor || !photoSpotlight.classList.contains("is-visible")) {
       return;
     }
 
     const { lon, lat, color } = activeSpotlightAnchor;
     const [px, py] = lonLatToScreen(lon, lat, view);
+
+    // On mobile, photo sits neatly as a compact top-right inset; draw a short leader from the visible pin on the left
+    if (isMobile()) {
+      const rect = photoSpotlight.getBoundingClientRect();
+      if (rect.width > 0 && px > 0 && px < width && py > 0 && py < height) {
+        const attachX = rect.left;
+        const attachY = Math.max(rect.top + 18, Math.min(rect.bottom - 18, py));
+        gLeader
+          .append("line")
+          .attr("x1", px)
+          .attr("y1", py)
+          .attr("x2", attachX)
+          .attr("y2", attachY)
+          .attr("stroke", color || "var(--alert)")
+          .attr("stroke-width", 1.8)
+          .attr("stroke-dasharray", "5 4")
+          .attr("opacity", 0.85);
+        gLeader
+          .append("circle")
+          .attr("cx", attachX)
+          .attr("cy", attachY)
+          .attr("r", 3.5)
+          .attr("fill", color || "var(--alert)");
+      }
+      return;
+    }
+
     const cardW = Math.min(390, width * 0.34);
     const cardH = photoSpotlight.offsetHeight || 320;
     const minLeft = Math.max(515, width * 0.41);
@@ -816,11 +846,26 @@
     if (mapOverlayState.nightPhotoPin && DATA.ahvaz.nightPhotoLocation) {
       const loc = DATA.ahvaz.nightPhotoLocation;
       const [px, py] = lonLatToScreen(loc.lon, loc.lat, view);
-      gAnno.append("circle").attr("cx", px).attr("cy", py).attr("r", 28).attr("fill", "var(--boat)").attr("opacity", 0.25);
-      gAnno.append("circle").attr("cx", px).attr("cy", py).attr("r", 15).attr("fill", "none").attr("stroke", "var(--boat)").attr("stroke-width", 2.2);
-      gAnno.append("circle").attr("cx", px).attr("cy", py).attr("r", 7.5).attr("fill", "var(--boat)").attr("stroke", "var(--bg)").attr("stroke-width", 2.4);
-      gAnno.append("text").attr("class", "map-label").attr("x", px - 18).attr("y", py - 10).attr("text-anchor", "end").attr("font-size", 18).attr("fill", "var(--boat)").text(loc.name);
-      gAnno.append("text").attr("class", "map-sublabel").attr("x", px - 18).attr("y", py + 11).attr("text-anchor", "end").text(loc.subtitle);
+      const mob = isMobile();
+      gAnno.append("circle").attr("cx", px).attr("cy", py).attr("r", mob ? 20 : 28).attr("fill", "var(--boat)").attr("opacity", 0.25);
+      gAnno.append("circle").attr("cx", px).attr("cy", py).attr("r", mob ? 12 : 15).attr("fill", "none").attr("stroke", "var(--boat)").attr("stroke-width", 2.2);
+      gAnno.append("circle").attr("cx", px).attr("cy", py).attr("r", mob ? 6 : 7.5).attr("fill", "var(--boat)").attr("stroke", "var(--bg)").attr("stroke-width", 2.2);
+      gAnno
+        .append("text")
+        .attr("class", "map-label")
+        .attr("x", mob ? Math.max(14, px - 10) : px - 18)
+        .attr("y", mob ? py + 26 : py - 10)
+        .attr("text-anchor", mob ? "start" : "end")
+        .attr("font-size", mob ? 13.5 : 18)
+        .attr("fill", "var(--boat)")
+        .text(mob ? "Seventh Bridge" : loc.name);
+      gAnno
+        .append("text")
+        .attr("class", "map-sublabel")
+        .attr("x", mob ? Math.max(14, px - 10) : px - 18)
+        .attr("y", mob ? py + 42 : py + 11)
+        .attr("text-anchor", mob ? "start" : "end")
+        .text(mob ? "Photo taken here" : loc.subtitle);
     }
 
     // 4b. Iran drought cities
@@ -876,11 +921,26 @@
       const f = mapOverlayState.globalFocus;
       const [fx, fy] = lonLatToScreen(f.lon, f.lat, view);
       const col = f.color || "var(--alert)";
-      gGlobal.append("circle").attr("cx", fx).attr("cy", fy).attr("r", 28).attr("fill", col).attr("opacity", 0.28);
-      gGlobal.append("circle").attr("cx", fx).attr("cy", fy).attr("r", 15).attr("fill", "none").attr("stroke", col).attr("stroke-width", 2);
-      gGlobal.append("circle").attr("cx", fx).attr("cy", fy).attr("r", 8.5).attr("fill", col).attr("stroke", "var(--bg)").attr("stroke-width", 2.5);
-      gGlobal.append("text").attr("class", "map-label").attr("x", fx - 18).attr("y", fy - 12).attr("text-anchor", "end").attr("font-size", 19).attr("fill", col).text(f.name);
-      gGlobal.append("text").attr("class", "map-sublabel").attr("x", fx - 18).attr("y", fy + 9).attr("text-anchor", "end").text(f.sub);
+      const mob = isMobile();
+      gGlobal.append("circle").attr("cx", fx).attr("cy", fy).attr("r", mob ? 20 : 28).attr("fill", col).attr("opacity", 0.28);
+      gGlobal.append("circle").attr("cx", fx).attr("cy", fy).attr("r", mob ? 12 : 15).attr("fill", "none").attr("stroke", col).attr("stroke-width", 2);
+      gGlobal.append("circle").attr("cx", fx).attr("cy", fy).attr("r", mob ? 6.5 : 8.5).attr("fill", col).attr("stroke", "var(--bg)").attr("stroke-width", 2.2);
+      gGlobal
+        .append("text")
+        .attr("class", "map-label")
+        .attr("x", mob ? Math.max(14, fx - 12) : fx - 18)
+        .attr("y", mob ? fy + 26 : fy - 12)
+        .attr("text-anchor", mob ? "start" : "end")
+        .attr("font-size", mob ? 14 : 19)
+        .attr("fill", col)
+        .text(f.name);
+      gGlobal
+        .append("text")
+        .attr("class", "map-sublabel")
+        .attr("x", mob ? Math.max(14, fx - 12) : fx - 18)
+        .attr("y", mob ? fy + 42 : fy + 9)
+        .attr("text-anchor", mob ? "start" : "end")
+        .text(f.sub);
 
       if (f.syriaExtras) {
         const [tx, ty] = lonLatToScreen(38.5, 38.0, view);
