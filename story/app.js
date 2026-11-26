@@ -2242,44 +2242,82 @@
   // =========================================================================
   function setupObservers() {
     const stepEls = Array.from(document.querySelectorAll(".step"));
+
+    function activateStepEl(el) {
+      if (!el) return;
+      const id = el.dataset.step;
+      const idx = Number(el.dataset.index);
+      if (id !== currentStepId) {
+        applyStep(id, idx);
+      }
+    }
+
+    // Require >55% of a 100vh step to be in view so micro-scrolls never flicker or skip
     const observer = new IntersectionObserver(
       (entries) => {
+        let best = null;
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const id = entry.target.dataset.step;
-            const idx = Number(entry.target.dataset.index);
-            if (id !== currentStepId) {
-              applyStep(id, idx);
+          if (entry.isIntersecting && entry.intersectionRatio >= 0.55) {
+            if (!best || entry.intersectionRatio > best.intersectionRatio) {
+              best = entry;
             }
           }
         });
+        if (best) activateStepEl(best.target);
       },
-      { rootMargin: "-42% 0px -42% 0px", threshold: 0.01 }
+      { threshold: [0.55, 0.75] }
     );
     stepEls.forEach((el) => observer.observe(el));
 
+    // Settle sync ensures dragging the scrollbar or fast snaps always land on the exact centered step
+    function syncNearestStep() {
+      const midY = window.innerHeight / 2;
+      let nearest = null;
+      let bestDist = Infinity;
+      stepEls.forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.bottom < 0 || r.top > window.innerHeight) return;
+        const dist = Math.abs((r.top + r.bottom) / 2 - midY);
+        if (dist < bestDist) {
+          bestDist = dist;
+          nearest = el;
+        }
+      });
+      if (nearest) activateStepEl(nearest);
+    }
+
+    let settleTimer = null;
     window.addEventListener(
       "scroll",
       () => {
         const docH = document.documentElement.scrollHeight - window.innerHeight;
         const pct = docH > 0 ? Math.min(100, Math.max(0, (window.scrollY / docH) * 100)) : 0;
         progressBar.style.width = `${pct}%`;
+
+        clearTimeout(settleTimer);
+        settleTimer = setTimeout(syncNearestStep, 110);
       },
       { passive: true }
     );
+    window.addEventListener("scrollend", syncNearestStep, { passive: true });
+
+    function goToIndex(idx) {
+      const clamped = Math.max(0, Math.min(STEPS.length - 1, idx));
+      stepEls[clamped].scrollIntoView({ behavior: "smooth", block: "center" });
+    }
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && lightbox.classList.contains("is-open")) {
         lightbox.classList.remove("is-open");
         return;
       }
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-      if (e.key === "ArrowDown" || e.key === "PageDown") {
-        const next = Math.min(STEPS.length - 1, currentStepIndex + 1);
-        stepEls[next].scrollIntoView({ behavior: "smooth", block: "center" });
-      } else if (e.key === "ArrowUp" || e.key === "PageUp") {
-        const prev = Math.max(0, currentStepIndex - 1);
-        stepEls[prev].scrollIntoView({ behavior: "smooth", block: "center" });
+      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "BUTTON") return;
+      if (e.key === "ArrowDown" || e.key === "PageDown" || (e.key === " " && !e.shiftKey)) {
+        e.preventDefault();
+        goToIndex(currentStepIndex + 1);
+      } else if (e.key === "ArrowUp" || e.key === "PageUp" || (e.key === " " && e.shiftKey)) {
+        e.preventDefault();
+        goToIndex(currentStepIndex - 1);
       }
     });
   }

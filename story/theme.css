@@ -65,6 +65,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-snap-type: y mandatory;
+}
+
 html,
 body {
   margin: 0;
@@ -426,16 +430,19 @@ a {
 }
 
 .step {
-  min-height: 92vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   padding: 24px 0 24px 4.2vw;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
 }
 
 .step:first-child {
   min-height: 100vh;
   align-items: flex-end;
   padding-bottom: 11vh;
+  scroll-snap-align: start;
 }
 
 .step:last-child {
@@ -780,6 +787,14 @@ a {
   background: var(--bg-elevated);
   border-top: 1px solid var(--surface-border);
   padding: 56px 6vw 72px;
+  scroll-snap-align: start;
+}
+
+.story-footer::after {
+  content: "";
+  display: block;
+  height: 1px;
+  scroll-snap-align: end;
 }
 
 .footer-inner {
