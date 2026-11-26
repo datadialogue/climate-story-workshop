@@ -63,3 +63,12 @@ For animation (the Du Bois folding bars), a chart can define `events`, and a fra
 - US unemployment ("Take a look at this chart"): BLS via FRED, series UNRATE.
 - The vaccination scatter's points were traced from the original slide (they are approximate, no source link).
 - The dual-axis "Production costs" figures are images (`images/dual-axis-*.png`), not recreated charts.
+
+## Online
+
+- Slides: https://datadialogue.github.io/climate-story-workshop/ (redirects to `slides.html`)
+- Story: https://datadialogue.github.io/climate-story-workshop/story/
+
+GitHub Pages serves the `main` branch as is, so run `quarto render slides.qmd` and commit `slides.html`
+and `slides_files/` before pushing. The original `.pptx` files are not published (see `.gitignore`).
+The slides share the story's fonts (Inter, Fraunces) and highlight colours (see `theme/climate.scss`).

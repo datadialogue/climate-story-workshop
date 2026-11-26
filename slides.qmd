@@ -48,7 +48,7 @@ resources:
 ![](images/alireza.png)
 :::
 
-# [01]{.num}Storytelling with <br>[visualization??]{.accent} {.section-slide background-color="#1C2430"}
+# [01]{.num}Storytelling with <br>[visualization??]{.accent} {.section-slide background-color="#1E2022"}
 
 ## Berries {.notitle}
 
@@ -256,7 +256,7 @@ Visualizations are everywhere
 ![](images/network.jpg){.frame height="470"}
 :::
 
-# [02]{.num}What [works?]{.accent} {.section-slide background-color="#1C2430"}
+# [02]{.num}What [works?]{.accent} {.section-slide background-color="#1E2022"}
 
 Learning from best practices from psychology and computer science
 
@@ -558,7 +558,7 @@ Guide viewers to the right comparisons
 
 [1 · Simplify]{.fragment .fade-up}<br>[2 · Structure]{.fragment .fade-up}<br>[3 · Story]{.fragment .fade-up}
 
-# [03]{.num}Let's [practice]{.accent} {.section-slide background-color="#1C2430"}
+# [03]{.num}Let's [practice]{.accent} {.section-slide background-color="#1E2022"}
 
 ## Example 1 {.notitle}
 
@@ -794,7 +794,7 @@ We can differentiate between positive and negative rates using color.
 
 [Figures 5.15 and 5.16 from Alberto Cairo, *The Truthful Art* (2016). Values read from the figures.]{.source}
 
-# [04]{.num}How we design<br>[changes the story]{.accent} {.section-slide background-color="#1C2430"}
+# [04]{.num}How we design<br>[changes the story]{.accent} {.section-slide background-color="#1E2022"}
 
 ## Health plan {.notitle}
 
@@ -892,4 +892,4 @@ How you choose your data is part of the storytelling
 
 ## Ahvaz and the Karun {.notitle background-iframe="story/index.html" background-interactive="true"}
 
-# Thank you {.section-slide background-color="#1C2430"}
+# Thank you {.section-slide background-color="#1E2022"}

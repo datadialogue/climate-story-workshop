@@ -6,13 +6,17 @@ $bg: #FBFAF7;
 $ink: #1C2430;
 $muted: #6B7280;
 $context: #C9CCD1;
-$hot: #D9480F;
+// highlight colours shared with the story (story/theme.css), darkened a little for the light background
+$hot: #D4572C;      // story --alert
+$teal: #2F9A78;     // story --river, on light backgrounds
+$teal-light: #6BC4A2; // story --river, on dark backgrounds
+$story-bg: #1E2022;  // story --bg
 $cool: #1D6FA3;
 $hot-soft: #F6D2C2;
 
 $body-bg: $bg;
 $body-color: $ink;
-$link-color: $cool;
+$link-color: $teal;
 $font-family-sans-serif: Inter, "Helvetica Neue", Arial, sans-serif;
 $presentation-font-size-root: 30px;
 $presentation-heading-font: Fraunces, Georgia, serif;
@@ -32,12 +36,17 @@ $presentation-line-height: 1.35;
 
   .kicker {
     font-family: $font-family-sans-serif; font-size: 0.5em; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase; color: $hot; margin-bottom: 0.3em;
+    letter-spacing: 0.12em; text-transform: uppercase; color: $teal; margin-bottom: 0.3em;
   }
   .muted { color: $muted; }
   .small { font-size: 0.7em; }
   .tiny { font-size: 0.5em; color: $muted; }
   .hot { color: $hot; }
+  // the story's highlight style: coloured, semibold words instead of headings
+  .hl { color: $teal; font-weight: 600; }
+  .hl-alert { color: $hot; font-weight: 600; }
+  .hl-water { color: $cool; font-weight: 600; }
+  strong { font-weight: 600; }
   .cool { color: $cool; }
   .mark { background: linear-gradient(transparent 55%, $hot-soft 55%); padding: 0 0.1em; }
   .center { text-align: center; }
@@ -49,7 +58,7 @@ $presentation-line-height: 1.35;
   section.section-slide {
     h1, h2 { color: #fff; font-size: 2.6em; line-height: 1.05; margin-top: 1.6em; }
     .num { display: block; font-family: $font-family-sans-serif; font-weight: 600; font-size: 0.45em; color: rgba(255,255,255,.55); letter-spacing: .12em; margin-bottom: .6em; }
-    .accent { color: #FF8A4C; }
+    .accent { color: $teal-light; }
     p { color: rgba(255,255,255,.7); }
   }
 

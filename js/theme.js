@@ -11,7 +11,7 @@ window.C = {
   grid: "#E7E5E0",      // recessive gridlines
   context: "#C9CCD1",   // de-emphasised "everything else" marks
   faint: "#E3E5E8",
-  hot: "#D9480F",       // warm accent (warming, increases, the one thing to look at)
+  hot: "#D4572C",       // warm accent (warming, increases, the one thing to look at)
   cool: "#1D6FA3",      // cool accent (cooling, decreases)
   hotSoft: "#F6D2C2",
   coolSoft: "#CFE2F0",
